@@ -193,7 +193,7 @@ def detect_markers(img):
 
                 cx.append(int((corners[x][0][0][0] + corners[x][0][1][0] + corners[x][0][2][0] + corners[x][0][3][0]) / 4))
                 cy.append(int((corners[x][0][0][1] + corners[x][0][1][1] + corners[x][0][2][1] + corners[x][0][3][1]) / 4))
-                tup = (ids[x], (cx[x], cy[x]), rvec, tvec)  # Draw A square around the markers
+                tup = (ids[x,0], (cx[x], cy[x]), rvec, tvec)  # Draw A square around the markers
                 aruco_list.append(tup)
         print(aruco_list)
         return aruco_list
