@@ -176,7 +176,7 @@ def detect_markers(img):
 
         markerLength = 100
         aruco_list = []
-        aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+        aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_250)
         parameters = aruco.DetectorParameters_create()
 
         # lists of ids and the corners beloning to each id
