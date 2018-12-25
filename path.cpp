@@ -9,7 +9,7 @@ using namespace std;
 void add_edge(vector<int> adj[], int src, int dest) 
 { 
     adj[src].push_back(dest); 
-    cout<<"edge between "<<src<<"\t"<<dest<<"\n";
+    // cout<<"edge between "<<src<<"\t"<<dest<<"\n";
     adj[dest].push_back(src); 
     
 } 
@@ -24,9 +24,9 @@ void add_edge_to_cell(int a[19][6], int cellNo, int node11, int node12, int node
     a[cellNo][4]= node31;
     a[cellNo][5]= node32;
     
-    for(int j=0; j<6;j++){
-        cout<<cellNo<<":\t"<<a[cellNo][j]<<"\n";
-    }
+    // for(int j=0; j<6;j++){
+    //     cout<<cellNo<<":\t"<<a[cellNo][j]<<"\n";
+    // }
     
     
 }
@@ -88,7 +88,7 @@ bool BFS(vector<int> adj[], int src, int dest, int v,
 // utility function to print the shortest distance  
 // between source vertex and destination vertex 
 void printShortestDistance(vector<int> adj[], int s,  
-                                    int dest, int v) 
+                                    int dest, int v, int &d) 
 { 
     // predecessor[i] array stores predecessor of 
     // i and distance array stores distance of i 
@@ -110,10 +110,12 @@ void printShortestDistance(vector<int> adj[], int s,
         path.push_back(pred[crawl]); 
         crawl = pred[crawl]; 
     } 
+    
+    d = dist[dest]; 
   
     // distance from source is in distance array 
-    cout << "Shortest path length is : "
-        << dist[dest]; 
+    //cout << "Shortest path length is : "
+    //    << d; 
   
     // printing path from source to destination 
     cout << "\nPath is::\n"; 
@@ -123,10 +125,26 @@ void printShortestDistance(vector<int> adj[], int s,
 
 
 
-int cellToNode(int cellNo){
+int cellToNode(int a[20][6],int cellNo,int axis, int &N1, int &N2){
     
+    cout<<"CELL ="<<cellNo<<"\t";
     
-    
+    if(axis==1){
+        // cout<<"AXIS = 1:  \t"<<a[cellNo][0]<<"\t";
+        // cout<<a[cellNo][1]<<"\n";
+        N1 = a[cellNo][0];
+        N2 = a[cellNo][1];
+    }
+    else if(axis==2){
+        // cout<<"AXIS = 1:  \t"<<a[cellNo][2]<<"\t"<<a[cellNo][3]<<"\n";
+        N1 = a[cellNo][2];
+        N2 = a[cellNo][3];
+    }
+    else if(axis==3){
+        N1 = a[cellNo][4];
+        N2 = a[cellNo][5];
+    }
+    cout<<"AXIS = "<<axis<<": \t"<<N1<<"\t"<<N2<<"  \n";
 }
   
 // Driver program to test above functions 
@@ -134,7 +152,7 @@ int main()
 { 
     // no. of vertices 
     int v = 55;  
-    int cell[19][6];
+    int cell[20][6];
   
     // array of vectors is used to store the graph 
     // in the form of an adjacency list 
@@ -202,9 +220,32 @@ int main()
         add_edge_to_cell(cell, 17, 45, 24, 25, 22, 46, 23);
         add_edge_to_cell(cell, 18, 43, 22, 45, 20, 44, 21);
         add_edge_to_cell(cell, 19, 17, 20, 43, 18, 42, 19);
+//////////////////////////////////////////////////////////////
 
+        int cellnumber= 5, axis= 3;
+        int N1,N2;
+        cellToNode(cell,cellnumber,axis,N1,N2);
+        // cout<<N1<<"NODES \t"<<N2<<"\n";
 
     int source = 14, dest = 34; 
-    printShortestDistance(adj, source, dest, v); 
+    int distance1, distance2;
+    printShortestDistance(adj, source, N1, v, distance1); 
+    cout<<"\npath length 1 is"<<distance1;
+    printShortestDistance(adj, source, N2, v, distance2); 
+    cout<<"\npath length 2 is"<<distance2;
+    if(distance1<distance2){
+        int ds1;
+        printShortestDistance(adj, source, N1, v, ds1); 
+
+    }
+    else if(distance1<distance2){
+        int ds1;
+        printShortestDistance(adj, source, N2, v, ds1); 
+
+    }
+    else{
+        cout<<"Both distances are same";
+    }
+
     return 0; 
 } 
