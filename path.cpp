@@ -13,6 +13,23 @@ void add_edge(vector<int> adj[], int src, int dest)
     adj[dest].push_back(src); 
     
 } 
+
+
+
+void add_edge_to_cell(int a[19][6], int cellNo, int node11, int node12, int node21, int node22, int node31, int node32){
+    a[cellNo][0]= node11;
+    a[cellNo][1]= node12;
+    a[cellNo][2]= node21;
+    a[cellNo][3]= node22;
+    a[cellNo][4]= node31;
+    a[cellNo][5]= node32;
+    
+    for(int j=0; j<6;j++){
+        cout<<cellNo<<":\t"<<a[cellNo][j]<<"\n";
+    }
+    
+    
+}
   
 // a modified version of BFS that stores predecessor 
 // of each vertex in array p 
@@ -103,12 +120,21 @@ void printShortestDistance(vector<int> adj[], int s,
     for (int i = path.size() - 1; i >= 0; i--) 
         cout << path[i] << " "; 
 } 
+
+
+
+int cellToNode(int cellNo){
+    
+    
+    
+}
   
 // Driver program to test above functions 
 int main() 
 { 
     // no. of vertices 
     int v = 55;  
+    int cell[19][6];
   
     // array of vectors is used to store the graph 
     // in the form of an adjacency list 
@@ -120,6 +146,8 @@ int main()
     // an edge between them. 
     // add_edge(adj, 0, 1); 
     // add_edge(adj, 0, 3); 
+    
+    
     for(int j =1; j<48; j++){
         add_edge(adj, j, j+1); 
         // cout<<"edge between \t"<<j<<"\t"<<j+1<<"\n";
@@ -154,21 +182,29 @@ int main()
         add_edge(adj, 47, 54); 
 
         
+////////////////////////////////////////////////////////////
+        add_edge_to_cell(cell, 1, 9, 36, 7, 10, 8, 37);
+        add_edge_to_cell(cell, 2, 7, 34, 5, 36, 6, 35);
+        add_edge_to_cell(cell, 3, 37, 50, 35, 38, 36, 51);
+        add_edge_to_cell(cell, 4, 11, 38, 37, 12, 10,  39);
+        add_edge_to_cell(cell, 5, 2, 5, 3, 34, 4, 33);
+        add_edge_to_cell(cell, 6, 35, 32, 33, 50, 34, 49);
+        add_edge_to_cell(cell, 7, 51, 54, 49, 52, 50, 53);
+        add_edge_to_cell(cell, 8, 39, 52, 51, 40, 38, 41);
+        add_edge_to_cell(cell, 9, 13, 40, 39, 14, 12, 15);
+        add_edge_to_cell(cell, 10, 33, 30, 1, 32, 2, 31);
+        add_edge_to_cell(cell, 11, 49, 48, 31, 54, 32, 47);
+        add_edge_to_cell(cell, 12, 53, 46, 47, 44, 54, 45);
+        add_edge_to_cell(cell, 13, 41, 44, 53, 42, 52, 43);
+        add_edge_to_cell(cell, 14, 15, 42, 41, 16, 40, 17);
+        add_edge_to_cell(cell, 15, 31, 28, 29, 48, 30, 27);
+        add_edge_to_cell(cell, 16, 47, 26, 27, 46, 48, 25);
+        add_edge_to_cell(cell, 17, 45, 24, 25, 22, 46, 23);
+        add_edge_to_cell(cell, 18, 43, 22, 45, 20, 44, 21);
+        add_edge_to_cell(cell, 19, 17, 20, 43, 18, 42, 19);
 
 
-
-
-
-
-
-    // add_edge(adj, 3, 4); 
-    // add_edge(adj, 3, 7); 
-    // add_edge(adj, 4, 5); 
-    // add_edge(adj, 4, 6); 
-    // add_edge(adj, 4, 7); 
-    // add_edge(adj, 5, 6); 
-    // add_edge(adj, 6, 7); 
-    int source = 49, dest = 54; 
+    int source = 14, dest = 34; 
     printShortestDistance(adj, source, dest, v); 
     return 0; 
 } 
