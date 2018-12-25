@@ -9,7 +9,9 @@ using namespace std;
 void add_edge(vector<int> adj[], int src, int dest) 
 { 
     adj[src].push_back(dest); 
+    cout<<"edge between "<<src<<"\t"<<dest<<"\n";
     adj[dest].push_back(src); 
+    
 } 
   
 // a modified version of BFS that stores predecessor 
@@ -118,17 +120,18 @@ int main()
     // an edge between them. 
     // add_edge(adj, 0, 1); 
     // add_edge(adj, 0, 3); 
-    add_edge(adj, 1, 2); 
     for(int j =1; j<48; j++){
         add_edge(adj, j, j+1); 
-        cout<<"edge between \t"<<j<<"\t"<<j+1<<"\n";
+        // cout<<"edge between \t"<<j<<"\t"<<j+1<<"\n";
     }
         add_edge(adj, 1, 30); 
         add_edge(adj, 31, 48); 
+        add_edge(adj, 49, 54); 
+
 
     for(int j =49; j<54; j++){
         add_edge(adj, j, j+1); 
-        cout<<"edge between\t"<<j<<"\t"<<j+1<<"\n";
+        // cout<<"edge between\t"<<j<<"\t"<<j+1<<"\n";
     }
         
         add_edge(adj, 2, 33); 
@@ -150,7 +153,7 @@ int main()
         add_edge(adj, 44, 53); 
         add_edge(adj, 47, 54); 
 
-
+        
 
 
 
@@ -165,7 +168,7 @@ int main()
     // add_edge(adj, 4, 7); 
     // add_edge(adj, 5, 6); 
     // add_edge(adj, 6, 7); 
-    int source = 30, dest = 41; 
+    int source = 49, dest = 54; 
     printShortestDistance(adj, source, dest, v); 
     return 0; 
 } 
