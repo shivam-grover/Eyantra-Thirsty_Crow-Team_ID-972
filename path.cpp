@@ -222,23 +222,29 @@ int main()
         add_edge_to_cell(cell, 19, 17, 20, 43, 18, 42, 19);
 //////////////////////////////////////////////////////////////
 
-        int cellnumber= 5, axis= 3;
+        int cellnumber= 19, axis= 2;
         int N1,N2;
         cellToNode(cell,cellnumber,axis,N1,N2);
         // cout<<N1<<"NODES \t"<<N2<<"\n";
 
-    int source = 14, dest = 34; 
+    int source = 34, dest = 34; 
     int distance1, distance2;
+    
+    
     printShortestDistance(adj, source, N1, v, distance1); 
-    cout<<"\npath length 1 is"<<distance1;
+    cout<<"\nDistance 1 "<<distance1;
+    
+    
     printShortestDistance(adj, source, N2, v, distance2); 
-    cout<<"\npath length 2 is"<<distance2;
+    cout<<"\nDistance 2 "<<distance2;
+    
+    
     if(distance1<distance2){
         int ds1;
         printShortestDistance(adj, source, N1, v, ds1); 
 
     }
-    else if(distance1<distance2){
+    else if(distance1>distance2){
         int ds1;
         printShortestDistance(adj, source, N2, v, ds1); 
 
