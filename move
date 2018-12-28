@@ -76,6 +76,14 @@ void velocity (unsigned char left_motor, unsigned char right_motor)
 	OCR5BL = (unsigned char)right_motor;
 }
 
+void velocityback (unsigned char left_motor, unsigned char right_motor)
+{
+	
+	OCR5AL = (unsigned char)left_motor;
+	_delay_ms(2000);
+	OCR5BL = (unsigned char)right_motor;
+}
+
 //Function used for setting motor's direction
 void motion_set (unsigned char Direction)
 {
@@ -150,25 +158,34 @@ int main()
 		{
 				//FRONT MOVEMENT
 	 	velocity (255, 230);
-		 forward(); 
-		 _delay_ms(2000);
+		forward(); 
+		_delay_ms(2000);
 		 //velocity (245, 250);
 		 //forward();
-		 _delay_ms(1000);
+		_delay_ms(865);
+		velocity(255,0);
+		_delay_ms(135);
 		stop();	
-		//magnet_on();
+		velocity(0,0);
+		magnet_on();
 		_delay_ms(3000);
 		//BACK MOVEMENT 
-		velocity (255, 240);
-		back(); //both wheels backward						
-		//_delay_ms(1000);
+		
+		velocity (255, 0);
+		back(); //both wheels backward	
+		_delay_ms(135);
+		velocity(255,240);
+		_delay_ms(2865);
+		velocity(255,0);
 		//velocity (250, 240);
 		//back(); //both wheels backward
 		//_delay_ms(2000);
-		//magnet_off();
-		_delay_ms(3000);
+		magnet_off();
+		//_delay_ms(3000);
+		_delay_ms(135);
 		stop();
-		_delay_ms(3000);
+		velocity(0,0);
+		_delay_ms(2865);
 		}			 
 		
 }
