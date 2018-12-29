@@ -51,30 +51,27 @@ char uart_rx()
 
 int main(void)
 {
-	int i=0;
-	char ar[] = "I received : ";
-	uart0_init();
+	int i=0;								//a variable for the for loop
+	char ar[] = "I received : ";			//since this part of the string is always the same, we have initialized it in an array of characters
+	uart0_init();							//initializing the uart registers for communication
     /* Replace with your application code */
-    while (1) 
+    while (1)								//this loop will run as long as the atmega is powered on
     {
-		data = uart_rx();
-		while(!(UCSR0A & TE));	
-			for(i =0;i<strlen(ar);i++){
+		data = uart_rx();					//storing the received data
+		while(!(UCSR0A & TE));			//waiting to transmit
+			for(i =0;i<strlen(ar);i++){		//we will send the string one character at a time
+					
 					while(!(UCSR0A & TE));
-						if(i == (strlen(ar)-1)){
-						UDR0 = data;
+						if(i == (strlen(ar)-1)){	//checking if the we have reached the end of ar[]
+						UDR0 = data;				 //setting UDR0 data register as our data which we had received earlier to send back
 						}
-						else if(i == (strlen(ar))){
-							return 0;
-						}
-						else{
-							UDR0 = ar[i];
+						else{						//if we haven't reach the end of ar[],
+							UDR0 = ar[i];			// then get the character with index i and set the UDR0 data register as that
 						}
 					
 
-			//uart_tx(data)
+			
 			
 			}
     }
 }
-
