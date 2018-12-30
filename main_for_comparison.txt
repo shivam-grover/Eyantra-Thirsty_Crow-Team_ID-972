@@ -62,24 +62,17 @@ void magnet_off()	//a function to turn the magnet off
 
 void forward()		//a function to move the robot forward in a straight line
 {
-	velocity(0,225);	/*setting the velocity of the left motor as 0 before turning the motors on 
-						 since it appeared to start a few milliseconds before motor 2 and would jerk the robot rightwards*/
+	velocity(255,230);	/*at maximum values of veelocitty for both motors, the robot would move a bit leftwards. So to make it 					go linear we take the velocity of the left motor as 255 and of the right motor as 225*/
 	
-
 	PORTA = 0x05;		//setting pins 2 and 0 of port A as logic 1
-	_delay_ms(27);		//a delay of 27 milliseconds to avoid the jerk caused by the left motor
-	velocity(255,225);	//setting the left motor to its maximum value at the right time
 }
 
 void backward()
 {
-	
-	PORTA = 0x0A;		//setting pins 3 and 1 of port A as logic 1
-	
 	velocity(255,240);	//setting velocity of left motor as 255 and right motor a 240
 						//as a straight backwards motion was observed at these velocities 
 	
-	
+	PORTA = 0x0A;		//setting pins 3 and 1 of port A as logic 1	
 }
 
 void left()
@@ -121,7 +114,6 @@ int main(void)
     /* Replace with your application code */
 	motor_pin_config();
 	magnet_pin_config();
-	_delay_ms(3000);
     while (1) 
     {
 		forward();
