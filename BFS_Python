@@ -1,0 +1,61 @@
+'''Read python graphs from - https://www.python-course.eu/graphs_python.php and BFS traversal from geeksforgeeks '''
+
+from collections import defaultdict    #works same as normal dictionary but just allows you to give default values to dictionary values even if they dont exist 
+  
+class Graph: 
+  
+    # Constructor 
+    def __init__(self): 
+  
+        # default dictionary to store graph 
+        self.graph = defaultdict(list) 
+  
+
+   
+
+ def addEdge(self,u,v): 
+        self.graph[u].append(v) 
+  
+    # Function to print a BFS of graph 
+    def BFS(self, s):   #  s is a node 
+  
+        
+        visited = [False] * (len(self.graph))  #mark all nodes as "not visited initially"
+  
+         
+        queue = [] 
+  
+        queue.append(s) #once you have appended - marking as visited  
+        visited[s] = True
+  
+        while queue: 
+  
+            # Dequeue a vertex from  
+          
+            s = queue.pop(0) 
+          
+   
+            for i in self.graph[s]:  # the popped node' neighbours are being visited one by one  
+                 if visited[i] == False: 
+                    queue.append(i) 
+                    visited[i] = True
+
+g = Graph() 
+        add_edge(2, 33); 
+        add_edge(5, 34); 
+        add_edge(7, 36); 
+        add_edge(10, 37); 
+        add_edge(12, 39); 
+        add_edge( 15, 40); 
+        add_edge( 17, 42); 
+        add_edge( 20, 43); 
+        add_edge( 22, 45); 
+        add_edge(25, 46); 
+        add_edge( 27, 48); 
+        add_edge( 32, 49); 
+        add_edge( 35, 50); 
+        add_edge( 38, 51); 
+        add_edge( 41, 52); 
+        add_edge( 44, 53); 
+        add_edge( 47, 54);   
+  
