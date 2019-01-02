@@ -2,7 +2,16 @@
  * echo.c
  *
  * Created: 13-12-2018 19:38:46
- * Author : ERTS-1 
+ * Author : ERTS 1
+ */ 
+
+/*
+ * Team Id: eYRC#972
+ * Author List: Shivam Grover, Harshita Diddee, Shivani Jindal, Anuj Trehan
+ * Filename: echo.c
+ * Theme: Thirsty Crow (TC)(eYRC)
+ * Functions: uart0_init(), uart_tx(char data), uart_rx(), ISR(USART0_RX_vect)  
+ * Global Variables: RX, TX, TE, RE, volatile unsigned char data
  */ 
 
 #define F_CPU 14745600
@@ -17,6 +26,8 @@
 #define RE  (1<<7)
 
 volatile unsigned char data;
+
+
 
 void uart0_init()
 {
