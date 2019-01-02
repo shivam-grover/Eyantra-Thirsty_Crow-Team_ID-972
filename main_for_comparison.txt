@@ -5,16 +5,42 @@
  * Author : ERTS 1
  */ 
 
+/*
+* Team Id: 972
+* Author List: Harshita Didee, Shivam Grover, Shivani Jindal, Anuj Trehan
+* Filename: main.c
+* Theme: Thirsty-Crow
+* Functions: magnet_pin_config(), magnet_pin_config(), timer5_init(), velocity(), magnet_on(), magnet_off(), forward(),	backward(), soft_left(), soft_right(), stop(), main()
+* Global Variables: none
+*/
+
+
 #define F_CPU 14745600
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+
+/*
+? * Function Name: magnet_pin_config
+? * Input: none
+? * Output: none
+? * Logic: Initializes the pins of port H for the use of electromagnet
+? * Example Call: magnet_pin_config();
+*/
 
 void magnet_pin_config()
 {
 	DDRH = 0x01;	//setting pin 1 of port H as output
 	PORTH = 0x00;	//setting PH1 initially as logic 0
 }
+
+/*
+? * Function Name: motor_pin_config
+? * Input: none
+? * Output: none
+? * Logic: Initializes the pins of port A for use by the motors. Also calls timer5_init to set the timer for PWM use
+? * Example Call: motor_pin_config();
+*/
 
 void motor_pin_config()
 {
@@ -25,6 +51,13 @@ void motor_pin_config()
 	timer5_init();	// since we can't change the main function we called this here to enable timer
 }
 
+/*
+? * Function Name: magnet_pin_config
+? * Input: none
+? * Output: none
+? * Logic: Initializes timer 5 in PWM mode for velocity control
+? * Example Call: timer5_init();
+*/
 void timer5_init()
 {
 	TCCR5B = 0x00;		//Stop
@@ -41,31 +74,70 @@ void timer5_init()
 	TCCR5B = 0x0B;	//WGM12=1; CS12=0, CS11=1, CS10=1 (Prescaler=64)
 }
 
-void velocity (unsigned char left_motor, unsigned char right_motor)		//a function to set the velocity of the two motors. It accepts input from 0 to 255.
+/*
+? * Function Name: velocity
+? * Input: left_motor -> velocity of left motor(from 0 to 255)
+		   right_motor -> velocity of right motor(from 0 to 255) 
+? * Output: none
+? * Logic: Sets the velocity of the motors
+? * Example Call: velocity(255,250);
+*/
+
+void velocity (unsigned char left_motor, unsigned char right_motor)		
 {
 	
 	OCR5AL = (unsigned char)left_motor;		//set the velocity for left motor or motor 1
 	OCR5BL = (unsigned char)right_motor;	        //set the velocity for right motor or motor 2
 }
 
+/*
+? * Function Name: magnet_on
+? * Input: none
+? * Output: none
+? * Logic: Turns on the electromagnet. By sending logic high to pin 0 of port H
+? * Example Call: magnet_on();
+*/
 
-
-void magnet_on()	//a function to turn the magnet on
+void magnet_on()	
 {
 	PORTH = 0x01;	//setting pin 0 of port H as logic 1
 }
 
-void magnet_off()	//a function to turn the magnet off
+/*
+? * Function Name: magnet_off
+? * Input: none
+? * Output: none
+? * Logic: Turns off the electromagnet. By sending logic low to pin 0 of port H
+? * Example Call: magnet_off();
+*/
+
+void magnet_off()	
 {
 	PORTH = 0x00;	//setting all pins of port H as logic 0
 }
 
-void forward()		//a function to move the robot forward in a straight line
+/*
+? * Function Name: forward
+? * Input: none
+? * Output: none
+? * Logic: moves the robot forward in a straight line by setting pins 2 and 0 of port A as logic 1
+? * Example Call: forward();
+*/
+
+void forward()		
 {
-	velocity(255,230);	/*at maximum values of veelocitty for both motors, the robot would move a bit leftwards. So to make it 					go linear we take the velocity of the left motor as 255 and of the right motor as 225*/
+	velocity(255,230);	/*at maximum values of velocity for both motors, the robot would move a bit leftwards. So to make it go linear we take the velocity of the left motor as 255 and of the right motor as 225*/
 	
 	PORTA = 0x05;		//setting pins 2 and 0 of port A as logic 1
 }
+
+/*
+? * Function Name: backward
+? * Input: none
+? * Output: none
+? * Logic: moves the robot backwards in a straight line by setting pins 3 and 1 of port A as logic 1
+? * Example Call: backward();
+*/
 
 void backward()
 {
@@ -75,26 +147,65 @@ void backward()
 	PORTA = 0x0A;		//setting pins 3 and 1 of port A as logic 1	
 }
 
+/*
+? * Function Name: left
+? * Input: none
+? * Output: none
+? * Logic: rotates the robot in the left direction by making the right motor rotate in forward direction and the left motor rotate backward direction by setting pins 3 and 0 of port A as logic 1
+? * Example Call: left();
+*/
+
 void left()
 {
 	PORTA =	0x09;		//setting pins 3 and 0 of port A as logic 1
 }
+
+/*
+? * Function Name: right
+? * Input: none
+? * Output: none
+? * Logic: rotates the robot in the right direction by making the left motor rotate in forward direction and the right motor rotate backward direction by setting pins 2 and 1 of port A as logic 1
+? * Example Call: right();
+*/
 
 void right()
 {
 	PORTA = 0x06;		//setting pins 2 and 1 of Port A as logic 1
 }
 
+/*
+? * Function Name: soft_left
+? * Input: none
+? * Output: none
+? * Logic: making a left turn by making the right motor rotate in forward direction and keeping the left motor stopped by setting pin 2 port A as logic 1
+? * Example Call: soft_left();
+*/
+
 void soft_left()
 {
 	PORTA = 0x04;		//setting pin 2 of Port A as logic 1
 }
+
+/*
+? * Function Name: soft_right
+? * Input: none
+? * Output: none
+? * Logic: making a right turn by making the left motor rotate in forward direction and keeping the right motor stopped by setting pin 1 port A as logic 1
+? * Example Call: soft_right();
+*/
 
 void soft_right()
 {
 	PORTA = 0x01;		//setting pin 1 of port A as logic 1
 }
 
+/*
+? * Function Name: stop
+? * Input: none
+? * Output: none
+? * Logic: Stops the motors by setting all pins of port A as logic 1
+? * Example Call: soft_left();
+*/
 
 void stop()
 {
@@ -107,7 +218,13 @@ void stop()
 }
 
 
-
+/*
+? * Function Name: main
+? * Input: none
+? * Output: none
+? * Logic: performs the necessary actions given in this task
+? * Example Call: none
+*/
 
 int main(void)
 {
