@@ -319,7 +319,6 @@ Purpose: Receives the ArUco information as input and overlays the 3D Model of a 
          on the ArUco marker. That ArUco information is used to
          calculate the rotation matrix and subsequently the view matrix. Then that view matrix
          is loaded as current matrix and the 3D model is rendered.
-
          Parts of this code are already completed, you just need to fill in the blanks. You may
          however add your own code in this function.
 """
@@ -331,23 +330,23 @@ def overlay(img, ar_list, ar_id, texture_file):
             centre, rvec, tvecs = x[1], x[2], x[3]
 
     rmtx = cv2.Rodrigues(rvec)[0]
-    offset = [[[0.127*5/4, -0.127/4, 0]]]
+    offset = [[[-0.127*19/8, -0.127*2, 0]]]
     tvecs = tvecs - offset
     font = cv2.FONT_HERSHEY_SIMPLEX #font for displaying text (below)
 
     cv2.putText(img, "Id: " + str(ar_id), centre, font, 1, (0,255,0),2,cv2.LINE_AA)
 
-    # view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]],
-    #                         [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]],
-    #                         [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]],
-    #                         [0.0, 0.0, 0.0, 1.0]])
+    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2],  tvecs[0][0][0]*3.5],
+                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*2.5],
+                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], 8],
+                            [0.0, 0.0, 0.0, 1.0]])
     
 
     
-    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]*9.5],
-                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*6.8],
-                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*15],
-                            [0.0, 0.0, 0.0, 1.0]])
+    # view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]*72],
+    #                         [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*72],
+    #                         [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*15],
+    #                         [0.0, 0.0, 0.0, 1.0]])
     print(tvecs ,  texture_file)
     view_matrix = view_matrix * INVERSE_MATRIX
     view_matrix = np.transpose(view_matrix)
@@ -355,7 +354,7 @@ def overlay(img, ar_list, ar_id, texture_file):
 
     glPushMatrix()
     glLoadMatrixd(view_matrix)
-    glutSolidTeapot(1.4)
+    glutSolidTeapot(0.5)
     glPopMatrix()
 
 
