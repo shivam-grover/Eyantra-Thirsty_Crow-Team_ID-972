@@ -43,7 +43,7 @@ def printShortestDistance(adjV, s, dest):
     # print(pred)
     crawl = dest
     path.append(crawl)
-    print(pred)
+    #print(pred)
     while(pred[crawl]!= -1):
         path.append(pred[crawl])
         crawl = pred[crawl]
@@ -244,6 +244,7 @@ edgeAxis(edge_Axis, 47,46,3)
 startaxis = 2
 axis = 1
 axisWater = 2
+print("Axis Pebble :", axis, "Axis WatP:",axisWater)
 cellNo = 16
 water =  8
 source = 1
@@ -290,7 +291,7 @@ print("AxisP:", axisPathPebble)
 axisPathWaterpi = pathToAxis(choiceW,edge_Axis)
 print("AxisW:", axisPathWaterpi)
 
-def axisToIns(axisIns,axisW, startAxis):
+def axisToIns(axisIns,axisW, startAxis,axisP,axisWater):
     ins = []
     if(axisIns[0]== 3):
         ins.append('r')
@@ -314,7 +315,20 @@ def axisToIns(axisIns,axisW, startAxis):
             ins.append('b')
 
         if(i == len(axisIns)-1):
-            ins.append('s')
+            if(axisIns[i]==axisP):
+                ins.append('s')
+            elif(axisIns[i]==2 and axisP==1):
+                ins.append('q')                 #right by 60 degrees
+            elif(axisIns[i]==1 and axisP == 2):
+                ins.append('q')                 #right by 60 degrees
+            elif(axisIns[i]==3 and axisP==2):
+                ins.append('w')                 #left by 60 degrees
+            elif (axisIns[i] == 3 and axisP == 2):
+                ins.append('w')
+            elif (axisIns[i] == 1 and axisP == 3):
+                ins.append('q')
+            elif (axisIns[i] == 3and axisP == 1):
+                ins.append('w')
 
     if(axisIns[len(axisIns)-1]==axisPathWaterpi[0]):
         ins.append('a')
@@ -348,12 +362,25 @@ def axisToIns(axisIns,axisW, startAxis):
             ins.append('b')
 
         if(i == len(axisPathWaterpi)-1):
-            ins.append('s')
+            if(axisPathWaterpi[i]==axisWater):
+                ins.append('d')
+            elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+                ins.append('q')  # right by 60 degrees
+            elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+                ins.append('q')  # right by 60 degrees
+            elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+                ins.append('w')  # left by 60 degrees
+            elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+                ins.append('w')
+            elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+                ins.append('q')
+            elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+                ins.append('w')
     print(ins)
     return ins
 
 
-pebbleWay = axisToIns(axisP,axisPathWaterpi,startaxis)
+pebbleWay = axisToIns(axisP,axisPathWaterpi,startaxis,axis,axisWater)
 
 
 
