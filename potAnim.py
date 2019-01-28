@@ -39,6 +39,8 @@ from OpenGL.GLUT import *
 from PIL import Image
 import time
 from objloader import *
+import serial
+import threading
 
 
 texture_object = None
@@ -84,8 +86,7 @@ Purpose: Initialises OpenGL window and callback functions. Then starts the event
          processing loop.
 """
 
-
-def main():
+def foreground():
     glutInit()
     global flag
     getCameraMatrix()
@@ -98,9 +99,29 @@ def main():
     glutIdleFunc(drawGLScene)
     glutReshapeFunc(resize)
     glutMainLoop()
-    time.sleep(5.0)
-    flag = 1
 
+def main():
+    a = threading.Thread(name='foreground', target=foreground)
+    b = threading.Thread(name='background', target=background)
+    b.start()
+    a.start()
+
+
+
+
+def background():
+    ser = serial.Serial("COM4", 9600, timeout=0.005)  # COM4 was used on our device
+    global flag
+    while True:
+        if (ser.isOpen()):  # Checking if input port is open ie capable of communication
+            # user_input = input("Enter key: ")   #Taking User input
+            # ser.write(user_input.encode())      #Writing binary data onto the serial port
+            time.sleep(0.2)                       #letting the atmega recieve the character and send it back
+
+            rec = ser.read(1)  #recieving upto 13 characters sent by atmega
+            if rec is not b'':
+                flag = rec
+            print(flag)                          #printing the recieved string
 
 """
 Function Name : init_gl()
@@ -126,6 +147,7 @@ def init_gl():
     glEnable(GL_LIGHT0)
     texture_background = glGenTextures(1)
     texture_object = glGenTextures(1)
+
 
 
 """
@@ -356,8 +378,7 @@ def overlay(img, ar_list, ar_id, texture_file):
                             [0.0, 0.0, 0.0, 1.0]])
 
 
-    print(flag)
-    flag+=1
+    print("flag",flag)
     # view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]*72],
     #                         [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*72],
     #                         [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*15],
@@ -365,14 +386,15 @@ def overlay(img, ar_list, ar_id, texture_file):
     #print(tvecs ,  texture_file)
     view_matrix = view_matrix * INVERSE_MATRIX
     view_matrix = np.transpose(view_matrix)
-    init_object_texture(texture_file)
+    #init_object_texture(texture_file)
 
     glPushMatrix()
     glLoadMatrixd(view_matrix)
-    if flag<100:
+    if flag is b'0':
         glCallList(crow.gl_list)
     else:
-        glCallList(OBJ('pitcher2.obj',swapyz=True).gl_list)
+
+        glCallList(OBJ('rocks.obj',swapyz=True).gl_list)
     #glutSolidTeapot(0.5)
     glPopMatrix()
 
