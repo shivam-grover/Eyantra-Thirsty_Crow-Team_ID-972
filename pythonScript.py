@@ -428,7 +428,7 @@ Function Name : background()
 Input: none
 Output: none
 Purpose: Does a number of jobs:
-        1. initializes the graph by putting values into functions like add_edge, add_edge_to_cell etc
+        1. defines the graph by putting values into functions like add_edge, add_edge_to_cell etc
         2. has the python arena configuration dictionary which decides the different destination node
         3. converts the values in the dictionary to usable format and using functions like cellTNode, printShortestDistance, pathToAxis and axisToIns
            it creates a list of instructions to be sent to the bot
@@ -441,19 +441,9 @@ Purpose: Does a number of jobs:
 
 
 def background():
-    # ser = serial.Serial("COM4", 9600, timeout=0.005)  # COM4 was used on our device
     global flag, flaga
-    # while True:
-    #     if (ser.isOpen()):  # Checking if input port is open ie capable of communication
-    #         # user_input = input("Enter key: ")   #Taking User input
-    #         # ser.write(user_input.encode())      #Writing binary data onto the serial port
-    #         time.sleep(0.2)                       #letting the atmega recieve the character and send it back
-    #
-    #         rec = ser.read(1)  #recieving upto 13 characters sent by atmega
-    #         if rec is not b'':
-    #             flag = rec
-    #         print(flag)                          #printing the recieved string
 
+#####################The graph is defined below this################3
     adjV = {}
     for i in range(1, 55):
         adjV[i] = []
@@ -595,8 +585,12 @@ def background():
     edgeAxis(edge_Axis, 47, 46, 3)
     # print(edge_Axis)
 
-    arena_config = {0: ("Water Pitcher", 8, "2-2"), 1: ("Pebble", 16 , "1-1"), 2: ("Pebble", 11, "3-3"),
-                    13: ("Pebble", 13, "2-2")}
+
+################################The graph is defined above this############
+
+
+    arena_config = {0: ("Water Pitcher", 8, "2-2"), 1: ("Pebble", 16 , "1-1"), 2: ("Pebble", 11, "3-3"),       
+                    13: ("Pebble", 13, "2-2")}                                                                  #using only the first two dictionary keys for progress task
     Robot_start = "START - 1"
 
     # startaxis = 2
@@ -605,7 +599,25 @@ def background():
     # cellNo = 16
     # water = 8
     # source = 1
-    startaxis = 2
+    startaxis = 2                       #the axis at either starting point is always 2
+    
+    ####DISCLAIMER###########
+    """
+    We had started defining the graph and working with the path planning right during task 3 and we were using
+    the image of the graph given in the rulebook with different cells numbered and we followed the axes given 
+    in it. Everything worked fine if we used that exact graph as a reference. But a couple of days before the 
+    submission of the progress task we realized the axes in the actual arena different:
+    
+    Axis 1-1 on the arena was axis 2-2 on the numbered graph
+    Axis 2-2 on the arena was axis 3-3 on the numbered graph
+    Axis 3-3 on the arena was axis 1-1 on the numbered graph
+    
+    Since there wasn't enough time to correct everything and it would've been error prone to completely change
+    the graph we simply use the following if else statements to convert the arena configurations to the
+    configurations of our graph we had defined and everything worked fine again.
+
+    """
+    
     if(arena_config[1][2]=="1-1"):
         axis = 2
     elif (arena_config[1][2] == "2-2"):
@@ -622,20 +634,21 @@ def background():
     # axisWater = arena_config[0][1]
     cellNo = arena_config[1][1]
     water = arena_config[0][1]
+    
+    
     if(Robot_start == "START - 1"):
         source = 1
     elif (Robot_start == "START - 2"):
         source = 16
-    PN1, PN2 = cellToNode(cell, cellNo, axis)
-    WN1, WN2 = cellToNode(cell, water, axisWater)
+        
+        
+    PN1, PN2 = cellToNode(cell, cellNo, axis)           #getting the two possible destination nodes for pebble
+    WN1, WN2 = cellToNode(cell, water, axisWater)       #getting the two possible destination nodes for water pitcher
     pathN1 = printShortestDistance(adjV, source, PN1)
-    # print("Distance N1:", len(pathN1))
-    # print("Axis N1:", pathToAxis(pathN1,edge_Axis))
-
     pathN2 = printShortestDistance(adjV, source, PN2)
 
-    if (len(pathN1) < len(pathN2)):
-        print("We choose path N1")
+    if (len(pathN1) < len(pathN2)):                     
+        print("We choose path N1")                      #deciding which of the two nodes for pebble is closer
         choice = pathN1
     elif (len(pathN2) < len(pathN1)):
         print("We choose path N2")
@@ -652,7 +665,7 @@ def background():
     pathW2 = printShortestDistance(adjV, choice[len(choice) - 1], WN2)
 
     if (len(pathW1) < len(pathW2)):
-        print("We choose path W1")
+        print("We choose path W1")                      #deciding which of the two nodes for water pitcher is closer
         choiceW = pathW1
     elif (len(pathW2) < len(pathW1)):
         print("We choose path W2")
@@ -662,28 +675,23 @@ def background():
         choiceW = pathN1
 
     print("DistanceP:", len(choice))
-    axisP = pathToAxis(choice, edge_Axis)
-    axisPathPebble = pathToAxis(choice, edge_Axis)
+    axisP = pathToAxis(choice, edge_Axis)                   
+    axisPathPebble = pathToAxis(choice, edge_Axis)          #changing path for start point to pebble in terms of axis
     print("AxisP:", axisPathPebble)
 
-    axisPathWaterpi = pathToAxis(choiceW, edge_Axis)
+    axisPathWaterpi = pathToAxis(choiceW, edge_Axis)        #changing path for pebble 1 to water pitcher in terms of axis
     print("AxisW:", axisPathWaterpi)
 
-    pebbleWay = axisToIns(axisP, axisPathWaterpi, startaxis, axis, axisWater)
+    pebbleWay = axisToIns(axisP, axisPathWaterpi, startaxis, axis, axisWater)       #calculating the final instructions to be sent to the bot
 
-    ##############################################################################################################
-    ser = serial.Serial("COM4", 9600, timeout=0.005)  # COM4 was used on our device
+    ###################################XBee communication###########################################
+    ser = serial.Serial("COM4", 9600, timeout=0.005)        # COM4 was used on our device
     fl = input("start?")
     if fl == '1':
         time.sleep(2)
         while True:
             if (ser.isOpen()):  # Checking if input port is open ie capable of communication
-                # user_input = input("Enter key: ")   #Taking User input
-                # ser.write(user_input.encode())      #Writing binary data onto the serial port
-                # time.sleep(0.2)                       #letting the atmega recieve the character and send it back
-                #
-                # rec = ser.read(13)                  #recieving upto 13 characters sent by atmega
-                # print(rec)                          #printing the recieved string
+               
 
                 for i in range(len(pebbleWay)):
                     ser.write(pebbleWay[i].encode())  # Writing binary data onto the serial port
@@ -697,9 +705,7 @@ def background():
                     elif rec == b'd':
                         flag = 'd'
                         print("DROP")
-                    elif rec == b'z':
-                        flag = 0
-                        flaga = 0
+                    
 
 """
 Function Name : init_gl()
@@ -1002,13 +1008,8 @@ def overlay(img, ar_list, ar_id, texture_file):
                             [rmtx[1][0], rmtx[1][1], rmtx[1][2], (tvecs[0][0][1]+0.16)*11],
                             [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*8],
                             [0.0, 0.0, 0.0, 1.0]])
-    # print(ar_id,tvecs)
 
-    #print("flag",flag)
-    # view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]*72],
-    #                         [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*72],
-    #                         [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*15],
-    #                         [0.0, 0.0, 0.0, 1.0]])
+    
     #print(tvecs ,  texture_file)
     view_matrix = view_matrix * INVERSE_MATRIX
     view_matrix = np.transpose(view_matrix)
@@ -1018,7 +1019,7 @@ def overlay(img, ar_list, ar_id, texture_file):
     glLoadMatrixd(view_matrix)
     if str(ar_id) == '0':
         # glScale(0.25, 0.25, 0.25)
-        glTranslate(0,0,0)
+        #glTranslate(0,0,0)
 
         if flag == 0:
             glCallList(waterE.gl_list)
@@ -1026,7 +1027,7 @@ def overlay(img, ar_list, ar_id, texture_file):
             glCallList(waterF.gl_list)
 
     if (str(ar_id) == '2' or str(ar_id) == '1'):
-        glTranslate(0,0,-2)
+        #glTranslate(0,0,-2)
         glScale(0.5, 0.5, 0.5)
         if flaga == 0:
             glCallList(pebble.gl_list)
@@ -1044,19 +1045,7 @@ def overlay(img, ar_list, ar_id, texture_file):
 
     #################################################3
 
-    #glutSolidTeapot(1.8)
-    #
-    # if ar_id is 1:
-    #     if flaga is 0:
-    #         glCallList(pebble.gl_list)
-    #     elif flaga is 'p':
-    #         glCallList(pebble1.gl_list)
-    # if flag is b'0':
-    #     glCallList(crow.gl_list)
-    # else:
-    #
-    #     glCallList(OBJ('rocks.obj',swapyz=True).gl_list)
-    #glutSolidTeapot(0.5)
+    
     glPopMatrix()
 
 
