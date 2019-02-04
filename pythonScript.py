@@ -267,35 +267,6 @@ def pathToAxis(path,edge_Axis):
         pathinAxis.append(edge_Axis[path[i]][path[i+1]])
     return pathinAxis
 
-# def axisToIns(axisIns, startAxis):
-#     ins = []
-#     if (axisIns[0] == 3):
-#         ins.append('r')
-#     elif (axisIns[0] == 1):
-#         ins.append('l')
-#
-#     for i in range(1, len(axisIns)):
-#         if (axisIns[i - 1] == 1 and axisIns[i] == 3):
-#             ins.append('l')
-#         elif (axisIns[i - 1] == 3 and axisIns[i] == 1):
-#             ins.append('r')
-#         elif (axisIns[i - 1] == 2 and axisIns[i] == 3):
-#             ins.append('r')
-#         elif (axisIns[i - 1] == 3 and axisIns[i] == 2):
-#             ins.append('l')
-#         elif (axisIns[i - 1] == 1 and axisIns[i] == 2):
-#             ins.append('r')
-#         elif (axisIns[i - 1] == 2 and axisIns[i] == 1):
-#             ins.append('l')
-#         elif (axisIns[i - 1] == axisIns[i]):
-#             ins.append('b')
-#
-#
-#         if (i == len(axisIns) - 1):
-#             ins.append('s')
-#     print(ins)
-#     return ins
-
 """
 Function Name : axisToIns()
 Input: axisIns (a list containing path in terms of axis from the start node to the pebble), 
@@ -360,7 +331,7 @@ def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater):
                 ins.append('q')
                 ins.append('s')
                 axisIns.append(3)
-            elif (axisIns[i] == 3and axisP == 1):
+            elif (axisIns[i] == 3 and axisP == 1):
                 ins.append('w')
                 ins.append('s')
                 axisIns.append(1)
