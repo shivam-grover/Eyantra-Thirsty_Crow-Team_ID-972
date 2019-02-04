@@ -41,6 +41,7 @@ import time
 from objloader import *
 import serial
 import threading
+import os, glob
 
 
 texture_object = None
@@ -56,15 +57,21 @@ INVERSE_MATRIX = np.array([[1.0, 1.0, 1.0, 1.0],
                            [-1.0, -1.0, -1.0, -1.0],
                            [1.0, 1.0, 1.0, 1.0]])
 crow = None
-pebble = None
-pebble1 = None
-waterE = None
-waterF = None
+pebble = None               #for the initial pebble stack
+#pebble1 = None
+pebble_dim = None           #for the final pebble stack
+
+waterE = None           #for the initial water pitcher
+waterM = None           #for the middle water pitcher(not used here)
+
+waterF = None           #for the filled water pitcher
 global flag
 
-flag = 0
-flaga = 0
-
+flag = 0                #to trigger animation when the pebble is picked
+flaga = 0               #to trigger animation when the pebble is dropped
+i = 1
+frames = []             #to store the obj files for crow animation
+frames_crowrock = []    #to store the obj files for crow animation with pebble
 ################## Define Utility Functions Here #######################
 """
 Function Name : getCameraMatrix()
@@ -85,7 +92,7 @@ def getCameraMatrix():
 
 ############# Main Function and Initialisations ########################
 """
-Function Name : main()
+Function Name : foreground()
 Input: None
 Output: None
 Purpose: Initialises OpenGL window and callback functions. Then starts the event
@@ -106,7 +113,12 @@ def foreground():
     glutReshapeFunc(resize)
     glutMainLoop()
 
-
+"""
+Function Name : main()
+Input: None
+Output: None
+Purpose: assigns threads to foreground and background and starts them
+"""
 
 def main():
     a = threading.Thread(name='foreground', target=foreground)
@@ -116,10 +128,25 @@ def main():
     a.start()
 
 #################################################################################################3
+
+"""
+Function Name : add_edge()
+Input: dict (dictionary for adjacent vertices), V1, V2(int)
+Output: None
+Purpose: make Vertex V1 and V2 adjacent
+"""
+
 def add_edge(dict, V1, V2):
     dict[V1].append(V2)
     dict[V2].append(V1)
     #print("edge between: ", V1, V2)
+
+"""
+Function Name : add_edge_to_cell()
+Input: dict (dictionary for relation between cells and vertices), node11, node12, node21, node22, node31, node32(int)
+Output: None
+Purpose: assigns vertices to the cell. the first two vertices lie on axis 1-1, next two on axis 2-2, and the later two on axis 3-3
+"""
 
 def add_edge_to_cell(dict, cell, node11, node12, node21, node22, node31, node32):
     dict[cell].append(node11)
@@ -128,6 +155,13 @@ def add_edge_to_cell(dict, cell, node11, node12, node21, node22, node31, node32)
     dict[cell].append(node22)
     dict[cell].append(node31)
     dict[cell].append(node32)
+
+"""
+Function Name : cellToNode()
+Input: dict (dictionary for relation between cells and vertices), cellNo, axis(int)
+Output: None
+Purpose: Gives two possible destination vertices Based on the cellNo and axis
+"""
 
 def cellToNode(dict, cellNo, axis):
     if (axis == 1):
@@ -144,11 +178,26 @@ def cellToNode(dict, cellNo, axis):
 
     return N1,N2
 
+"""
+Function Name : edgeAxis()
+Input: dictE (dictionary for relation between edges(two adjacent vertices) and the axis they are parallel to), V1, V2, axis(int)
+Output: None
+Purpose: Assigns axis to a pair of adjacent vertices
+"""
+
 def edgeAxis(dictE_A, V1, V2, axis):
     dictE_A[V1][V2] = axis
     # print("axis between:", V1, V2, axis)
     dictE_A[V2][V1] = axis
 
+"""
+Function Name : printShortestDistance()
+Input: adjV (dictionary for adjacent vertices), s(source vertex), dest(destination vertex)
+Output: A list 'path' which contains the vertices that need to be traversed to go from
+        s to dest
+Purpose: Uses a modified version of BFS algorithm (and stores the predecessor as well which is used to give the path)
+        and returns and prints the shortest path as a list
+"""
 
 def printShortestDistance(adjV, s, dest):
 
@@ -168,7 +217,13 @@ def printShortestDistance(adjV, s, dest):
     print("path is: ", path)
     return path
 
-
+"""
+Function Name : BFS()
+Input: adjV (dictionary for adjacent vertices), src(source vertex), dest(destination vertex)
+Output: A list 'pred' which contains the value of the predecessor vertex for the index as the current vertex
+Purpose: A modified version of BFS algorithm (and stores the predecessor as well which is used to give the path)
+        to find the shortest path and return a list pred which contains the value of the predecessor vertex for the index as the current vertex
+"""
 
 def BFS(adjV, src, dest):
     qu = []
@@ -198,6 +253,12 @@ def BFS(adjV, src, dest):
 
     return False
 
+"""
+Function Name : pathToAxis()
+Input: path (a list containing vertices that need to be travelled), edge_Axis(a list which converts a pair of adjacent vertices, basically an edge, to the axis it is parallel)
+Output: pathinAxis(A list which has the path to be taversed represented in axis form)
+Purpose: converts a path list into an axis list. Since each axis is at 30 degrees angle in a hexagon, we can use axis to find whether to turn left or right at nodes
+"""
 
 def pathToAxis(path,edge_Axis):
     pathinAxis = []
@@ -234,6 +295,24 @@ def pathToAxis(path,edge_Axis):
 #             ins.append('s')
 #     print(ins)
 #     return ins
+
+"""
+Function Name : axisToIns()
+Input: axisIns (a list containing path in terms of axis from the start node to the pebble), 
+        axisPathWaterpi ((a list containing path in terms of axis from the last traversed pebble to the water pitcher) 
+        axisP (int, the axis at which the current pebble to be traversed to is aligned)
+        axisWater(int, the axis at which the water pitcher is aligned)
+Output: ins (A list which has the final instructions to be sent to the robot)
+Purpose: converts an axis list to instructions consisting of characters, each denoting a certain function:
+         'r' : turn right
+         'l' : turn left
+         's' : stop and pick pebble
+         'd' : stop and drop pebble
+         'a' : turn 180 degrees
+         'q' : turn right by 60 degrees
+         'w' : turn left by 60 degrees
+"""
+
 
 def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater):
     ins = []
@@ -343,6 +422,22 @@ def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater):
     return ins
 
 #################################################################################################3
+
+"""
+Function Name : background()
+Input: none
+Output: none
+Purpose: Does a number of jobs:
+        1. initializes the graph by putting values into functions like add_edge, add_edge_to_cell etc
+        2. has the python arena configuration dictionary which decides the different destination node
+        3. converts the values in the dictionary to usable format and using functions like cellTNode, printShortestDistance, pathToAxis and axisToIns
+           it creates a list of instructions to be sent to the bot
+        4. opens serial port for communication bertween XBees
+        5. Sends the instructions to the bot
+        6. Recieves triggers for animation after pickups and drops and assigns values to flag and flaga for further processing
+        
+        
+"""
 
 
 def background():
@@ -500,7 +595,7 @@ def background():
     edgeAxis(edge_Axis, 47, 46, 3)
     # print(edge_Axis)
 
-    arena_config = {0: ("Water Pitcher", 5, "2-2"), 1: ("Pebble", 3, "1-1"), 2: ("Pebble", 11, "3-3"),
+    arena_config = {0: ("Water Pitcher", 8, "2-2"), 1: ("Pebble", 16 , "1-1"), 2: ("Pebble", 11, "3-3"),
                     13: ("Pebble", 13, "2-2")}
     Robot_start = "START - 1"
 
@@ -512,18 +607,18 @@ def background():
     # source = 1
     startaxis = 2
     if(arena_config[1][2]=="1-1"):
-        axis = 1
-    elif (arena_config[1][2] == "2-2"):
         axis = 2
-    if (arena_config[1][2] == "3-3"):
+    elif (arena_config[1][2] == "2-2"):
         axis = 3
+    if (arena_config[1][2] == "3-3"):
+        axis = 1
 
     if (arena_config[0][2] == "1-1"):
-        axisWater = 1
-    elif (arena_config[0][2] == "2-2"):
         axisWater = 2
-    if (arena_config[0][2] == "3-3"):
+    elif (arena_config[0][2] == "2-2"):
         axisWater = 3
+    if (arena_config[0][2] == "3-3"):
+        axisWater = 1
     # axisWater = arena_config[0][1]
     cellNo = arena_config[1][1]
     water = arena_config[0][1]
@@ -580,6 +675,7 @@ def background():
     ser = serial.Serial("COM4", 9600, timeout=0.005)  # COM4 was used on our device
     fl = input("start?")
     if fl == '1':
+        time.sleep(2)
         while True:
             if (ser.isOpen()):  # Checking if input port is open ie capable of communication
                 # user_input = input("Enter key: ")   #Taking User input
@@ -615,12 +711,17 @@ Purpose: Initialises various parameters related to OpenGL scene.
 
 def init_gl():
     global texture_object, texture_background
-    global crow, pebble, pebble1, waterE, waterF
-    waterE = OBJ('pitcher3.obj', swapyz=True)
-    pebble = OBJ('rocksFinal.obj', swapyz=True)
-    pebble1 = OBJ('rocksFinal.Dobj.obj', swapyz=True)
-    # waterE = OBJ('pitcher3.obj', swapyz=True)
-    waterF = OBJ('pitcher2.obj', swapyz=True)
+    global crow, pebble, pebble_dim, waterE, waterF
+
+    load('crowAnim',frames)
+    load('crowAnimPebble',frames_crowrock)
+
+    #
+    waterE = OBJ('pitcher.obj', swapyz=True)
+    pebble = OBJ('pebbleStack.obj', swapyz=True)
+    pebble_dim = OBJ('pebbleStackDiminished.obj', swapyz=True)
+    #waterM = OBJ('pitcher2.obj', swapyz=True)
+    waterF = OBJ('pitcher3.obj', swapyz=True)
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -674,13 +775,13 @@ def drawGLScene():
         ar_list = detect_markers(frame)
         if ar_list is not None:
             for i in ar_list:
-                if i[0] == 0:
-                    overlay(frame, ar_list, i[0], "texture_1.png")
-                if i[0] == 2:
-                    overlay(frame, ar_list, i[0], "texture_2.png")
-                if i[0] == 1:
-                    overlay(frame, ar_list, i[0], "texture_3.png")
-                if i[0] == 6:
+                # if i[0] == 0:
+                #     overlay(frame, ar_list, i[0], "texture_1.png")
+                # if i[0] == 2:
+                #     overlay(frame, ar_list, i[0], "texture_2.png")
+                # if i[0] == 1:
+                #     overlay(frame, ar_list, i[0], "texture_3.png")
+                # if i[0] == 610:
                     overlay(frame, ar_list, i[0], "texture_4.png")
 
         cv2.imshow('frame', frame)
@@ -766,7 +867,7 @@ def draw_background(img):
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, bg_image)
     glPushMatrix()
-    i = 30.0
+    i = 60.0
     # draw background
     glTranslatef(0.0, 0.0, -i)
     glBegin(GL_QUADS)
@@ -832,6 +933,45 @@ def init_object_texture(image_filepath):
 
 
 """
+Function Name : load()
+Input: directory(string, name of the folder in which the obj files are), frames(a list where the files will be appended)
+Output: None
+Purpose: Takes the directory name as input and stores all the obj files in it inside the list frames. 
+        Which will be used for animating the crow later
+"""
+
+
+def load(directory,frames):
+    os.chdir(directory)
+
+    for file in glob.glob("*.obj"):
+        frames.append(OBJ(file,swapyz=True))
+
+    os.chdir('..')
+    frames_length = len(frames)
+
+
+"""
+Function Name : next_frame()
+Input: frames(a list where the obj files for each frame of animation are stored)
+Output: frames[i].gl_list
+Purpose: Takes the frame list as input and returns the frames one by one to display animation on the openGL window
+"""
+
+def next_frame(frames):
+    global i
+    i += 1
+
+    #if frame_index >= self.frames_length:
+    if i >= len(frames):
+        i = 0
+
+    return frames[i].gl_list
+
+
+
+
+"""
 Function Name : overlay()
 Input: img (numpy array), aruco_list, aruco_id, texture_file (filepath of texture file)
 Output: None
@@ -858,11 +998,11 @@ def overlay(img, ar_list, ar_id, texture_file):
     cv2.putText(img, "Id: " + str(ar_id), centre, font, 1, (0,255,0),2,cv2.LINE_AA)
 
 
-    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2],  tvecs[0][0][0]*3.5],
-                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], tvecs[0][0][1]*2.5],
-                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*2.3],
+    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2],  (tvecs[0][0][0])*12.5],
+                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], (tvecs[0][0][1]+0.16)*11],
+                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*8],
                             [0.0, 0.0, 0.0, 1.0]])
-
+    # print(ar_id,tvecs)
 
     #print("flag",flag)
     # view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], tvecs[0][0][0]*72],
@@ -877,21 +1017,34 @@ def overlay(img, ar_list, ar_id, texture_file):
     glPushMatrix()
     glLoadMatrixd(view_matrix)
     if str(ar_id) == '0':
-        glScale(0.25, 0.25, 0.25)
-        glTranslate(0,-2,0)
+        # glScale(0.25, 0.25, 0.25)
+        glTranslate(0,0,0)
 
         if flag == 0:
             glCallList(waterE.gl_list)
         elif flag == 'd':
             glCallList(waterF.gl_list)
 
-    if str(ar_id) == '2':
-        glScale(0.135, 0.135, 0.135)
-        glTranslate(0,0,0)
+    if (str(ar_id) == '2' or str(ar_id) == '1'):
+        glTranslate(0,0,-2)
+        glScale(0.5, 0.5, 0.5)
         if flaga == 0:
             glCallList(pebble.gl_list)
         elif flaga == 'p':
-            glCallList(pebble1.gl_list)
+            glCallList(pebble_dim.gl_list)
+    if str(ar_id) == '10':
+        glScale(1.25,1.25,1.25)
+        if flaga == 0:
+            glCallList(next_frame(frames))
+        elif flaga == 'p':
+            glCallList(next_frame(frames_crowrock))
+        elif flag == 'd':
+            glCallList(next_frame(frames))
+
+
+    #################################################3
+
+    #glutSolidTeapot(1.8)
     #
     # if ar_id is 1:
     #     if flaga is 0:
