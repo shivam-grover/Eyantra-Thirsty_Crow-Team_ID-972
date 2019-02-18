@@ -10,7 +10,9 @@
 * Author List: Harshita Didee, Shivam Grover, Shivani Jindal, Anuj Trehan
 * Filename: main.c
 * Theme: Thirsty-Crow
-* Functions: magnet_pin_config(), magnet_pin_config(), timer5_init(), velocity(), magnet_on(), magnet_off(), forward(),	backward(), soft_left(), soft_right(), stop(), main()
+* Functions: magnet_pin_config(), buzzer_pin_config(), motor_pin_config(), timer5_init(), 
+			velocity(), magnet_on(), magnet_off(), buzzer_on(), buzzer_off(), forward(), 
+			backward(), soft_left(), soft_right(), stop(), main()
 * Global Variables: none
 */
 
@@ -104,6 +106,22 @@ void magnet_pin_config()
 }
 
 /*
+? * Function Name: buzzer_pin_config
+? * Input: none
+? * Output: none
+? * Logic: Initializes the pins of port B for the use of electromagnet
+? * Example Call: buzzer_pin_config();
+*/
+
+
+void buzzer_pin_config()
+{
+	DDRB = 0x01;	//setting pin 1 of port D as output
+	PORTB = 0x00;	//setting PH1 initially as logic 0
+}
+
+
+/*
 ? * Function Name: motor_pin_config
 ? * Input: none
 ? * Output: none
@@ -154,7 +172,7 @@ void timer5_init()
 
 void velocity (unsigned char left_motor, unsigned char right_motor)		
 {
-	float i = 0.75;
+	float i = 1;
 	OCR5AL = (unsigned char)right_motor*i;		//set the velocity for left motor or motor 1
 	OCR5BL = (unsigned char)left_motor*i;	        //set the velocity for right motor or motor 2
 }
@@ -173,6 +191,19 @@ void magnet_on()
 }
 
 /*
+? * Function Name: buzzer_on
+? * Input: None
+? * Output: None
+? * Logic: Turns on the buzzer. By sending logic low to pin 0 of port H
+? * Example Call: buzzer_on();
+*/
+
+void buzzer_on()
+{
+	PORTB = 0x01;	//setting pin 0 of port H as logic 1
+}
+
+/*
 ? * Function Name: magnet_off
 ? * Input: none
 ? * Output: none
@@ -186,6 +217,19 @@ void magnet_off()
 }
 
 /*
+? * Function Name: buzzer_off
+? * Input: None
+? * Output: None
+? * Logic: Turns off the buzzer. By sending logic low to pin 0 of port H
+? * Example Call: buzzer_off();
+*/
+
+void buzzer_off()
+{
+	PORTB = 0x00;	//setting all pins of port H as logic 0
+}
+
+/*
 ? * Function Name: forward
 ? * Input: none
 ? * Output: none
@@ -195,9 +239,10 @@ void magnet_off()
 
 void forward()		
 {
-	velocity(255,245);	/*at maximum values of velocity for both motors, the robot would move a bit leftwards. So to make it go linear we take the velocity of the left motor as 255 and of the right motor as 225*/
+	velocity(255,243);	//setting velocity of left motor as 255 and right motor a 240
+	//as a straight forwards motion was observed at these velocities
 	
-	PORTA = 0x05;		//setting pins 2 and 0 of port A as logic 1
+	PORTA = 0x0A;		//setting pins 3 and 1 of port A as logic 1
 }
 
 /*
@@ -210,10 +255,11 @@ void forward()
 
 void backward()
 {
-	velocity(255,240);	//setting velocity of left motor as 255 and right motor a 240
-						//as a straight backwards motion was observed at these velocities 
+	velocity(255,255);	/*at maximum values of velocity for both motors, the robot would move a bit leftwards. So to make it go linear we take the velocity of the left motor as 255 and of the right motor as 225*/
 	
-	PORTA = 0x0A;		//setting pins 3 and 1 of port A as logic 1	
+	PORTA = 0x05;		//setting pins 2 and 0 of port A as logic 1
+	
+	
 }
 
 /*
@@ -282,21 +328,21 @@ void soft_right()
 
 void stop()
 {
-	velocity(255,0);	/*setting the velocity of the right motor as 0 before the left motor
-						  since the right motor kept rotating for a few milliseconds longer than the left
-						  motor if we stopped them at the same time, causing the robot to tilt in one direction resulting in a non linear traversal */
-	_delay_ms(155);		//setting a delay of 155 milliseconds so that both motors stop rotating at the same time
+// 	velocity(255,0);	/*setting the velocity of the right motor as 0 before the left motor
+// 						  since the right motor kept rotating for a few milliseconds longer than the left
+// 						  motor if we stopped them at the same time, causing the robot to tilt in one direction resulting in a non linear traversal */
+// 	_delay_ms(200);		//setting a delay of 155 milliseconds so that both motors stop rotating at the same time
 	PORTA = 0x00;		//setting the pins of Port A as logic 0
 	
 }
 
 
 /*
-? * Function Name: main
+? * Function Name: adc_pin_config
 ? * Input: none
 ? * Output: none
-? * Logic: performs the necessary actions given in this task
-? * Example Call: none
+? * Logic: Initializes the pins of port F for ADC use
+? * Example Call: timer5_init();
 */
 
 void adc_pin_config (void)
@@ -307,16 +353,31 @@ void adc_pin_config (void)
 	PORTK = 0x00;
 }
 
+/*
+? * Function Name: adc_init
+? * Input: none
+? * Output: none
+? * Logic: Initializes registers' values for ADC use
+? * Example Call: timer5_init();
+*/
+
 void adc_init()
 {
 	ADCSRA = 0x00;
 	ADCSRB = 0x00;		//MUX5 = 0
-	ADMUX = 0x20;		//Vref=5V external --- ADLAR=1 --- MUX4:0 = 0000
+	ADMUX = 0x20;		//Vref=5V external		 ADLAR=1		 MUX4:0 = 0000
 	ACSR = 0x80;
-	ADCSRA = 0x86;		//ADEN=1 --- ADIE=1 --- ADPS2:0 = 1 1 0
+	ADCSRA = 0x86;		//ADEN=1	 ADIE=1		 ADPS2:0 = 1 1 0
 }
 
-//Function For ADC Conversion
+/*
+? * Function Name: ADC_Conversion
+? * Input: Ch (unsigned char)
+? * Output: a
+? * Logic: function for adc conversion
+? * Example Call: Right_white_line = ADC_Conversion(1)
+*/
+
 unsigned char ADC_Conversion(unsigned char Ch)
 {
 	unsigned char a;
@@ -334,140 +395,201 @@ unsigned char ADC_Conversion(unsigned char Ch)
 	return a;
 }
 
+/*
+? * Function Name: main
+? * Input: none
+? * Output: none
+? * Logic: receives instructions from the python script as characters, performs line following, 
+		   follows the instruction one by one at the nodes encountered, send triggers as characters when pebble is picked up and dropped
+? * Example Call: none
+*/
 
 int main(void)
 {
-	int j = 0;
-	int ar[] = {0,0,0,0,0,0,1,1,1,1,1,1};
-	char ins[7];
-	uart0_init();
 
-	for(int k =0; k<7; k++){
-		ins[k] = uart_rx();
-		while(!(UCSR0A & TE));
-		UDR0 = ins[k];
+int j = 0;
+int ar[] = {0,0,0,0,0,0,1,1,1,1,1,1};
+char ins[7];
+uart0_init();
+
+// for(int k =0; k<7; k++){
+// 	ins[k] = uart_rx();
+// 	while(!(UCSR0A & TE));
+// 	UDR0 = ins[k];
+// }
+cli();
+adc_pin_config();
+adc_init();
+timer5_init();
+sei();			int flag = 0;
+
+/* Replace with your application code */
+motor_pin_config();
+magnet_pin_config();
+_delay_ms(3000);
+while (1)
+{
+	Left_white_line = ADC_Conversion(3);	//Getting data of Left WL Sensor
+	Center_white_line = ADC_Conversion(2);	//Getting data of Center WL Sensor
+	Right_white_line = ADC_Conversion(1);	//Getting data of Right WL Sensor
+	// 			stop();
+	// 			if(ins[flag]=='l'){
+	// 				left();
+	// 				_delay_ms(3000);
+	// 			}
+	// 			else  if(ins[flag]=='r'){
+	// 				right();
+	// 				_delay_ms(3000);
+	// 			}
+	// 			else if(ins[flag]=='s'){
+	// 				forward();
+	// 				_delay_ms(1000);
+	// 				stop();
+	// 				_delay_ms(2000);
+	//
+	// 			}
+	// 			flag++;
+	
+	if (Center_white_line<100 && Right_white_line>115 && Left_white_line<100){
+		flag = 1;
+		
+		soft_right();
+
 	}
-	cli();
-	adc_pin_config();
-	adc_init();
-	timer5_init();
-	sei();			int flag = 0;
+	if (Center_white_line<100 && Left_white_line>110 && Right_white_line<100){
+		flag = 1;
+		soft_left();
 
-    /* Replace with your application code */
-	motor_pin_config();
-	magnet_pin_config();
-
-    while (1) 
-    {
-			Left_white_line = ADC_Conversion(3);	//Getting data of Left WL Sensor
-			Center_white_line = ADC_Conversion(2);	//Getting data of Center WL Sensor
-			Right_white_line = ADC_Conversion(1);	//Getting data of Right WL Sensor
-// 			stop();
-// 			if(ins[flag]=='l'){
-// 				left();
-// 				_delay_ms(3000);
-// 			}
-// 			else  if(ins[flag]=='r'){
-// 				right();
-// 				_delay_ms(3000);
-// 			}
-// 			else if(ins[flag]=='s'){
-// 				forward();
-// 				_delay_ms(1000);
-// 				stop();
-// 				_delay_ms(2000);
+	}
+	if (Center_white_line>110 && Right_white_line<100 && Left_white_line<100){
+		flag = 2;
+		forward();
+	}
+	if ((Center_white_line>100 && Right_white_line>100 && Left_white_line>100) || (Center_white_line>120 && Right_white_line<100 && Left_white_line>120) || (Center_white_line>120 && Right_white_line>120 && Left_white_line<100)){
+		flag = 1;
+		
+		forward();
+		_delay_ms(210);
+		if(ar[j]==0){
+			left();
+		_delay_ms(200);}
+		else if(ar[j]==1){
+			right();
+			_delay_ms(250);
+		}
+		if(j<11)
+		{j++;}
+		else {j =0;}
+	}
+	
+	if (Center_white_line<30 && Right_white_line<30 && Left_white_line<30){
+		stop();
+	}
+// 		left();
+// 		_delay_ms(3000);
+// 		stop();
+// 		_delay_ms(1000);
+// 		right();
+// 		_delay_ms(3000);
+// 		stop();
+		
+// 			Left_white_line = ADC_Conversion(3);	//Getting data of Left WL Sensor
+// 			Center_white_line = ADC_Conversion(2);	//Getting data of Center WL Sensor
+// 			Right_white_line = ADC_Conversion(1);	//Getting data of Right WL Sensor
 // 
-// 			}
-// 			flag++;
-			
-			if (Center_white_line<100 && Right_white_line>100 && Left_white_line<100){
-				flag = 1;
-				
-				soft_right();
-
-				}
-			if (Center_white_line<100 && Left_white_line>100 && Right_white_line<100){
-				flag = 1;
-				soft_left();
-
-			}	
-			if (Center_white_line>100 && Right_white_line<100 && Left_white_line<100){
-				flag = 2;
-				backward();
-			}			
-			if ((Center_white_line>100 && Right_white_line>100 && Left_white_line>100) || (Center_white_line>120 && Right_white_line<100 && Left_white_line>120) || (Center_white_line>120 && Right_white_line>120 && Left_white_line<100)){
-				flag = 1;
-				
-				backward();
-				_delay_ms(280);
-				if(ar[j]==0){
-				left();
-				_delay_ms(270);}
-				else if(ar[j]==1){
-					right();
-					_delay_ms(240);
-				}
-				if(j<11)
-				{j++;}
-				else {j =0;}
-			}
-			
-			if (Center_white_line<30 && Right_white_line<30 && Left_white_line<30){
-				stop();
-			}
-			
-// 			if(Center_white_line>100)
-// 			{
-// 				flag=1;
-// 				forward();
-// 			}
-
-// 			if((Left_white_line>20) && (flag==0))
-// 			{
-// 				flag=1;
-// 				soft_right();
-// 			}
 // 
-// 			if((Right_white_line>20) && (flag==0))
-// 			{
-// 				flag=1;
-// 				soft_left();
-// 			}
-// 
-// 			if((Center_white_line>100 && Left_white_line>100 && Right_white_line>100)||(Center_white_line>100&&Left_white_line>100)||(Center_white_line>100||Right_white_line>100)||(Center_white_line<50)&&(Left_white_line<50)&&(Right_white_line<40))
-// 			{
+// 			//when the black line is under the right led and not the others			
+// 			if (Center_white_line<100 && Right_white_line>100 && Left_white_line<100){
 // 				flag = 1;
+// 				
+// 				soft_right();			
+// 
+// 				}
+// 			//when the black line is under the center led and not the others
+// 			if (Center_white_line<100 && Left_white_line>80 && Right_white_line<100){
+// 				flag = 1;
+// 				soft_left();			
+// 
+// 			}	
+// 			//when the black line is under the center led and not the others
+// 			if (Center_white_line>100 && Right_white_line<100 && Left_white_line<100){
+// 				flag = 2;
+// 				forward();				
+// 			}			
+// 			//IF A NODE IS DETECTED
+// 			if ((Center_white_line>120 && Right_white_line>120 && Left_white_line>120) || (Center_white_line>145 && Right_white_line<100 && Left_white_line>145) || (Center_white_line>145 && Right_white_line>145 && Left_white_line<100)){
+// 				flag = 1;
+// 				forward();				
+// 				_delay_ms(280);
+// 				
+// 				if(ins[j]=='l'){		//Turn left 30 degrees
+// 				left();
+// 				_delay_ms(270);
+// 				}
+// 				else if(ins[j]=='r'){		//Turn right 30 degrees
+// 					right();
+// 					_delay_ms(240);
+// 				}
+// 				else if(ins[j]=='s'){		//first stop, ring the buzzer then go backwards to continue the line following
+// 					backward();
+// 					_delay_ms(20);
+// 					stop();
+// 					buzzer_on();
+// 					while(!(UCSR0A & TE));			//waiting to transmit
+// 					UDR0 = 's';						//sending trigger for animating pebble pickup
+// 					_delay_ms(1000);
+// 					buzzer_off();
+// 					_delay_ms(1000);
+// 
+// 					backward();
+// 					_delay_ms(700);
+// 					
+// 					}
+// 				else if(ins[j]=='d'){		//first stop, ring the buzzer then go backwards to continue the line following
+// 					backward();
+// 					_delay_ms(20);
+// 					stop();
+// 					while(!(UCSR0A & TE));			//waiting to transmit
+// 					UDR0 = 'd';						//sending trigger for animating pebble drop
+// 					buzzer_on();
+// 					_delay_ms(1000);
+// 					buzzer_off();
+// 					_delay_ms(1000);
+// 
+// 					backward();
+// 					_delay_ms(400);
+// 					stop();
+// 					break;
+// 					
+// 				}
+// 				else if(ins[j]=='a'){			//turn 180 degrees
+// 					left();
+// 					_delay_ms(1100);
+// 				}
+// 				else if(ins[j]=='q'){			//turn right to align axis of the robot with the axis of the aruco marker
+// 					right();
+//  					_delay_ms(600);
+// 
+// 					backward();					//go backward to continue line following and encounter the destination node with the axes aligned
+// 					_delay_ms(650);
+// 					
+// 				}
+// 				else if(ins[j]=='w'){			//turn left to align axis of the robot with the axis of the aruco marker
+// 					left();
+// 					_delay_ms(800);
+// 
+// 					backward();					//go backward to continue line following and encounter the destination node with the axes aligned
+// 					_delay_ms(650);
+// 					while(!(UCSR0A & TE));			//waiting to transmit
+// 					UDR0 = 'a';
+// 				}
+// 				j++;
+// 			}
+// 			
+// 			if (Center_white_line<30 && Right_white_line<30 && Left_white_line<30){		//if the line sensor reads readings for white surface
 // 				stop();
 // 			}
 			
-			
-			
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 			UDR0 = Left_white_line;
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 
-// 			UDR0 = 'a';
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 
-// 			UDR0 = Center_white_line;
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 
-// 			UDR0 = 'a';
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 
-// 			UDR0 = Right_white_line;
-// 			while(!(UCSR0A & TE));			//waiting to transmit
-// 
-// 			UDR0 = 'a';
-		//forward();
-// 		_delay_ms(3000);
-// 		stop();
-// 		magnet_on();
-// 		_delay_ms(3000);
-// 		backward();
-// 		_delay_ms(3000);
-// 		magnet_off();
-// 		stop();
-// 		_delay_ms(3000);
+
     }
 }
