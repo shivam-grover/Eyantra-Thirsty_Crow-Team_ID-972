@@ -20,7 +20,7 @@ texture_background = None
 camera_matrix = None
 dist_coeff = None
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))      #to get the width of the frame
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))    #to get the height of the frame
 INVERSE_MATRIX = np.array([[1.0, 1.0, 1.0, 1.0],
