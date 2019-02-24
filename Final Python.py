@@ -971,7 +971,7 @@ def background():
         PebbleAR1, PebbleAR2, PebbleAR3 = P1, P3, P2
     elif (finalPathToBot == Path5):
         PebbleAR1, PebbleAR2, PebbleAR3 = P3, P2, P1
-    elif (finalPathToBot == Path5):
+    elif (finalPathToBot == Path6):
         PebbleAR1, PebbleAR2, PebbleAR3 = P3, P1, P2
 
     ###################################XBee communication###########################################
