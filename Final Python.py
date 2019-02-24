@@ -20,16 +20,36 @@ texture_background = None
 camera_matrix = None
 dist_coeff = None
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))      #to get the width of the frame
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))    #to get the height of the frame
 INVERSE_MATRIX = np.array([[1.0, 1.0, 1.0, 1.0],
                            [-1.0, -1.0, -1.0, -1.0],
                            [-1.0, -1.0, -1.0, -1.0],
                            [1.0, 1.0, 1.0, 1.0]])
+
+##Dictionaries to define the arena
+adjV = {}                  #A dictionary to store the vertices and their relation(edges) with other vertices
+                           #for each vertex as the key, the value(list) are the adjacent vertices to the key
+for i in range(1, 55):
+    adjV[i] = []
+
+
+cell = {}                  #A dictionary to store the cell Numbers and their relation to the vertices adjacent
+                           #to it and axes
+for i in range(1, 20):
+    cell[i] = []
+
+
+edge_Axis = {}              #A dictionary to store the edges and the axes they're parallel to
+for i in range(55):
+    edge_Axis[i] = []
+
+START = 0
+Robot_start = ""
+#OBJ FILES#
 crow = None
 pebble = None               #for the initial pebble stack
-#pebble1 = None
 pebble_dim = None           #for the final pebble stack
 
 waterE = None           #for the initial water pitcher
@@ -39,10 +59,15 @@ waterM2 = None           #for the middle water pitcher 2
 waterF = None           #for the filled water pitcher
 global flag
 
+
+#Triggers for animation
 flag = 0                #to trigger animation for the water pitcher and crow
 flaga = 0               #to trigger animation for Pebblle 1
 flagb = 0               #to trigger animation for Pebblle 2
 flagc = 0               #to trigger animation for Pebblle 3
+bend = 0                #to trigger animation for the bending of the crow after the pitcher is full to signify drinking
+CrowPick = 0            #to trigger animation for the crow picking up the pebble in it's beak
+CrowBeakClose = 1       #to trigger animation for the crow dropping the pebble
 i = 1
 frames = []             #to store the obj files for crow animation
 frames_bend = []             #to store the obj files for crow animation of the crow bending its neck
@@ -54,6 +79,14 @@ P1=0
 P2=0
 P3=0
 W=0
+
+
+##Aruco IDs for pebbles
+PebbleAR1 = P1    #Initially following the order of pebbles they were given in the dictionary. This will be changed later
+                #in the function background() if the path of traversal would be shorter for a different order of pickup
+                #We will use these variables for projecting and animating the right model on the right aruco object.
+PebbleAR2 = P2
+PebbleAR3 = P3
 ################## Define Utility Functions Here #######################
 """
 Function Name : getCameraMatrix()
@@ -185,13 +218,17 @@ def printShortestDistance(adjV, s, dest):
     pred = []
     dist = []
     path = []
-    pred = BFS(adjV,s,dest)
+    if(s == dest):
+        path.append(s)
+    else:
+        pred = BFS(adjV,s,dest)
+        crawl = dest
+        path.append(crawl)
+        while (pred[crawl] != -1):
+            path.append(pred[crawl])
+            crawl = pred[crawl]
     # print(pred)
-    crawl = dest
-    path.append(crawl)
-    while(pred[crawl]!= -1):
-        path.append(pred[crawl])
-        crawl = pred[crawl]
+
 
 
     path.reverse()
@@ -216,18 +253,18 @@ def BFS(adjV, src, dest):
     #     pred[i] = -1
 
 
-    visited[src] = True
-    dist[src] = 0
-    qu.append(src)
+    visited[src] = True                 # setting source as visited
+    dist[src] = 0                       #distance of source from source is 0
+    qu.append(src)                      #appending source to the queue
 
     while(qu):
-        u = qu.pop(0)
+        u = qu.pop(0)                   #storing the value before popping
         for i in range(len(adjV[u])):
-            if(visited[adjV[u][i]]==False):
-                visited[adjV[u][i]]=True
-                dist[adjV[u][i]] = dist[u]+1
-                pred[adjV[u][i]] = u
-                qu.append(adjV[u][i])
+            if(visited[adjV[u][i]]==False):     #only processing if unvisited
+                visited[adjV[u][i]]=True        #set as visited
+                dist[adjV[u][i]] = dist[u]+1    #set distance one greater than the pred
+                pred[adjV[u][i]] = u            #set predecessor
+                qu.append(adjV[u][i])           #append current node in queue
 
                 if(adjV[u][i]==dest):
                     return pred
@@ -243,9 +280,12 @@ Purpose: converts a path list into an axis list. Since each axis is at 30 degree
 
 def pathToAxis(path,edge_Axis):
     pathinAxis = []
-    for i in range(len(path)-1):
-        # print(len(path), path[i], path[i+1])
-        pathinAxis.append(edge_Axis[path[i]][path[i+1]])
+    if(len(path)-1>0):
+        for i in range(len(path)-1):
+            # print(len(path), path[i], path[i+1])
+            pathinAxis.append(edge_Axis[path[i]][path[i+1]])
+    else:
+        pathinAxis.append(2)
     return pathinAxis
 
 
@@ -347,33 +387,34 @@ def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater,final,first):
                     ins.append('s')
                     axisIns.append(1)
     else:
-        i =0
-        if(axisIns[i]==axisP):
-            ins.append('s')
-        elif(axisIns[i]==2 and axisP==1):
-            ins.append('q')                 #right by 60 degrees
-            ins.append('s')
-            axisIns.append(1)
-        elif(axisIns[i]==1 and axisP == 2):
-            ins.append('w')                 #left by 60 degrees
-            ins.append('s')
-            axisIns.append(2)
-        elif(axisIns[i]==3 and axisP==2):
-            ins.append('q')                 #left by 60 degrees
-            ins.append('s')
-            axisIns.append(2)
-        elif (axisIns[i] == 2 and axisP == 3):
-            ins.append('w')
-            ins.append('s')
-            axisIns.append(3)
-        elif (axisIns[i] == 1 and axisP == 3):
-            ins.append('q')
-            ins.append('s')
-            axisIns.append(3)
-        elif (axisIns[i] == 3and axisP == 1):
-            ins.append('w')
-            ins.append('s')
-            axisIns.append(1)
+        if first == 0:
+            i =0
+            if(axisIns[i]==axisP):
+                ins.append('s')
+            elif(axisIns[i]==2 and axisP==1):
+                ins.append('q')                 #right by 60 degrees
+                ins.append('s')
+                axisIns.append(1)
+            elif(axisIns[i]==1 and axisP == 2):
+                ins.append('w')                 #left by 60 degrees
+                ins.append('s')
+                axisIns.append(2)
+            elif(axisIns[i]==3 and axisP==2):
+                ins.append('q')                 #left by 60 degrees
+                ins.append('s')
+                axisIns.append(2)
+            elif (axisIns[i] == 2 and axisP == 3):
+                ins.append('w')
+                ins.append('s')
+                axisIns.append(3)
+            elif (axisIns[i] == 1 and axisP == 3):
+                ins.append('q')
+                ins.append('s')
+                axisIns.append(3)
+            elif (axisIns[i] == 3and axisP == 1):
+                ins.append('w')
+                ins.append('s')
+                axisIns.append(1)
 
     ######   FIRST TURN FOR WATER PITCHER    #######
 
@@ -515,6 +556,189 @@ def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater,final,first):
 
 #################################################################################################3
 
+
+"""
+Function Name : calculatePath()
+Input: arena_config (a dictionary contaning  the position, Aruco ID and axes of each Aruco object
+       W1 (int, the cell number of the water pitcher)
+       P1 (int, the cell number of the first pebble)
+       W1 (int, the cell number of the second pebble)
+       W1 (int, the cell number of the third pebble)    #P1,P2,P3 are not same as the P1, P2, P3 in the next function 
+
+Output: Path (a list containing instructions(turn left, right etc) for the current order and configuration of objects) 
+Purpose: Finds the final path for the bot in the following order:
+        1. Finds the path between Robot_start to P1 and then from P1 to W1
+        2. Finds the path between W1 to P2 and then from P2 to W1
+        3. Finds the path between W1 to P3 and then from P3 to W1
+        
+        Then it adds the above paths and returns it
+"""
+
+def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
+    global PebbleAR1,PebbleAR2,PebbleAR3
+    if(arena_config[P1][2]=="1-1"):
+        axis = 2
+    elif (arena_config[P1][2] == "2-2"):
+        axis = 3
+    if (arena_config[P1][2] == "3-3"):
+        axis = 1
+
+    if (arena_config[W1][2] == "1-1"):
+        axisWater = 2
+    elif (arena_config[W1][2] == "2-2"):
+        axisWater = 3
+    if (arena_config[W1][2] == "3-3"):
+        axisWater = 1
+
+    if (arena_config[P2][2] == "1-1"):
+        axis_Pebble2 = 2
+    elif (arena_config[P2][2] == "2-2"):
+        axis_Pebble2 = 3
+    if (arena_config[P2][2] == "3-3"):
+        axis_Pebble2 = 1
+
+    if (arena_config[P3][2] == "1-1"):
+        axis_Pebble3 = 2
+    elif (arena_config[P3][2] == "2-2"):
+        axis_Pebble3 = 3
+    if (arena_config[P3][2] == "3-3"):
+        axis_Pebble3 = 1
+
+    cellNo = arena_config[P1][1]
+    cellNo_pebble2 = arena_config[P2][1]
+    cellNo_pebble3 = arena_config[P3][1]
+
+    water = arena_config[W1][1]
+
+
+    if(Robot_start == "START - 1"):
+        source = 1
+    elif (Robot_start == "START - 2"):
+        source = 16
+
+
+    PN1, PN2 = cellToNode(cell, cellNo, axis)                  #getting the two possible destination nodes for pebble 1
+    P2N1,P2N2 = cellToNode(cell, cellNo_pebble2, axis_Pebble2) #getting the two possible destination nodes for pebble 2
+    P3N1,P3N2 = cellToNode(cell, cellNo_pebble3, axis_Pebble3) #getting the two possible destination nodes for pebble 3
+    WN1, WN2 = cellToNode(cell, water, axisWater)       #getting the two possible destination nodes for water pitcher
+    pathN1 = printShortestDistance(adjV, source, PN1)   #path for pebble 1 at Node 1
+    pathN2 = printShortestDistance(adjV, source, PN2)   #path for pebble 1 at Node 2
+
+    if (len(pathN1) < len(pathN2)):
+        print("We choose path N1")                      #deciding which of the two nodes for pebble is closer
+        choice = pathN1
+    elif (len(pathN2) < len(pathN1)):
+        print("We choose path N2")
+        choice = pathN2
+    else:
+        print("Both distances are same")
+        choice = pathN1
+
+    pathW1 = printShortestDistance(adjV, choice[len(choice) - 1], WN1)  #path for Water Pitcher from Pebble 1
+    pathW2 = printShortestDistance(adjV, choice[len(choice) - 1], WN2)
+
+    if (len(pathW1) < len(pathW2)):
+        print("We choose path W1")                      #deciding which of the two nodes for water pitcher is closer
+        choiceW = pathW1
+    elif (len(pathW2) < len(pathW1)):
+        print("We choose path W2")
+        choiceW = pathW2
+    else:
+        print("Both distances are same")
+        choiceW = pathW1
+
+    print("DistanceP:", len(choiceW)+len(choice))
+
+    pathP21 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N1)          #WATER PICTHER TO PEBBLE!
+    pathP22 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N2)
+
+    if (len(pathP21) < len(pathP22)):
+        print("We choose path P21")                      #deciding which of the two nodes for water pitcher is closer
+        choiceP2 = pathP21
+    elif (len(pathP22) < len(pathP21)):
+        print("We choose path P22")
+        choiceP2 = pathP22
+    else:
+        print("Both distances are same")
+        choiceP2 = pathP21
+
+
+
+    pathW21 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN1)     #path for Water Pitcher from Pebble 2
+    pathW22 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN2)
+
+    if (len(pathW21) < len(pathW22)):
+        print("We choose path W1")  # deciding which of the two nodes for water pitcher is closer
+        choiceW2 = pathW21
+    elif (len(pathW22) < len(pathW21)):
+        print("We choose path W2")
+        choiceW2 = pathW22
+    else:
+        print("Both distances are same")
+        choiceW2 = pathW21
+
+
+    pathP31 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N1)
+    pathP32 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N2)
+
+    if (len(pathP31) < len(pathP32)):
+        print("We choose path P31")  # deciding which of the two nodes for water pitcher is closer
+        choiceP3 = pathP31
+    elif (len(pathP32) < len(pathP31)):
+        print("We choose path P32")
+        choiceP3 = pathP32
+    else:
+        print("Both distances are same")
+        choiceP3 = pathP31
+
+    pathW31 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN1)     #path for Water Pitcher from Pebble 2
+    pathW32 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN2)
+
+    if (len(pathW31) < len(pathW32)):
+        print("We choose path W1")  # deciding which of the two nodes for water pitcher is closer
+        choiceW3 = pathW31
+    elif (len(pathW32) < len(pathW31)):
+        print("We choose path W2")
+        choiceW3 = pathW32
+    else:
+        print("Both distances are same")
+        choiceW3 = pathW31
+
+    axisP = pathToAxis(choice, edge_Axis)
+    axisPathPebble = pathToAxis(choice, edge_Axis)          #changing path for start point to pebble in terms of axis
+    print("AxisP:", axisPathPebble)
+
+    axisPathPebble2 = pathToAxis(choiceP2, edge_Axis)  # changing path for start point to pebble in terms of axis
+    print("AxisP2:", axisPathPebble2)
+
+    axisPathPebble3 = pathToAxis(choiceP3, edge_Axis)  # changing path for start point to pebble in terms of axis
+    print("AxisP3:", axisPathPebble3)
+
+    axisPathWaterpi = pathToAxis(choiceW, edge_Axis)        #changing path for pebble 1 to water pitcher in terms of axis
+    print("AxisW:", axisPathWaterpi)
+
+    axisPathWaterpi2 = pathToAxis(choiceW2, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
+    print("AxisW:", axisPathWaterpi2)
+
+    axisPathWaterpi3 = pathToAxis(choiceW3, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
+    print("AxisW:", axisPathWaterpi3)
+
+    #Calculating the path instructions
+    # for source to Pebble 1 to water pitcher
+    PebblePath1 = axisToIns(axisP, axisPathWaterpi, 2, axis, axisWater,0,1)
+
+    # for Pebble 1 to Pebble 2 to water pitcher
+    pebblePath2 = axisToIns(axisPathPebble2, axisPathWaterpi2, axisWater, axis_Pebble2, axisWater,0,0)
+
+    # for Pebble 2 to Pebble 3 to water pitcher
+    pebblePath3 = axisToIns(axisPathPebble3, axisPathWaterpi3, axisWater, axis_Pebble3, axisWater,1,0)
+    Path = PebblePath1 + pebblePath2 + pebblePath3
+
+
+
+    return Path
+
+
 """
 Function Name : background()
 Input: none
@@ -533,18 +757,11 @@ Purpose: Does a number of jobs:
 
 
 def background():
-    global flag, flaga,flagb,flagc, P1,P2,P3,W
+    global flag, flaga,flagb,flagc, P1,P2,P3,W, START, Robot_start
+    global cell,adjV,edge_Axis, PebbleAR1, PebbleAR2,PebbleAR3
 
 #####################The graph is defined below this################
-    adjV = {}
-    for i in range(1, 55):
-        adjV[i] = []
-    cell = {}
-    for i in range(1, 20):
-        cell[i] = []
-    edge_Axis = {}
-    for i in range(55):
-        edge_Axis[i] = []
+
 
     for i in range(55):
         for j in range(55):
@@ -580,26 +797,26 @@ def background():
     add_edge(adjV, 47, 54);
     #######################
 
-    add_edge_to_cell(cell, 1, 9, 36, 7, 10, 8, 37);
-    add_edge_to_cell(cell, 2, 7, 34, 5, 36, 6, 35);
+
+    add_edge_to_cell(cell, 1, 36, 36, 7, 10, 37, 37);
+    add_edge_to_cell(cell, 2, 7, 34, 5, 36, 35, 35);
     add_edge_to_cell(cell, 3, 37, 50, 35, 38, 36, 51);
-    add_edge_to_cell(cell, 4, 11, 38, 37, 12, 10, 39);
-    add_edge_to_cell(cell, 5, 2, 5, 3, 34, 4, 33);
+    add_edge_to_cell(cell, 4, 38, 38, 37, 12, 10, 39);
+    add_edge_to_cell(cell, 5, 2, 5, 34, 34, 33, 33);
     add_edge_to_cell(cell, 6, 35, 32, 33, 50, 34, 49);
     add_edge_to_cell(cell, 7, 51, 54, 49, 52, 50, 53);
     add_edge_to_cell(cell, 8, 39, 52, 51, 40, 38, 41);
-    add_edge_to_cell(cell, 9, 13, 40, 39, 14, 12, 15);
-    add_edge_to_cell(cell, 10, 33, 30, 1, 32, 2, 31);
+    add_edge_to_cell(cell, 9, 40, 40, 39, 39, 12, 15);
+    add_edge_to_cell(cell, 10, 33, 30, 32, 32, 2, 31);
     add_edge_to_cell(cell, 11, 49, 48, 31, 54, 32, 47);
     add_edge_to_cell(cell, 12, 53, 46, 47, 44, 54, 45);
     add_edge_to_cell(cell, 13, 41, 44, 53, 42, 52, 43);
-    add_edge_to_cell(cell, 14, 15, 42, 41, 16, 40, 17);
-    add_edge_to_cell(cell, 15, 31, 28, 29, 48, 30, 27);
-    add_edge_to_cell(cell, 16, 47, 26, 27, 46, 48, 25);
-    add_edge_to_cell(cell, 17, 45, 24, 25, 22, 46, 23);
-    add_edge_to_cell(cell, 18, 43, 22, 45, 20, 44, 21);
-    add_edge_to_cell(cell, 19, 17, 20, 43, 18, 42, 19);
-
+    add_edge_to_cell(cell, 14, 15, 42, 16, 41, 40, 17);
+    add_edge_to_cell(cell, 15, 31, 31, 48, 48, 30, 27);
+    add_edge_to_cell(cell, 16, 47, 47, 27, 46, 48, 25);
+    add_edge_to_cell(cell, 17, 45, 45, 25, 22, 46, 46);
+    add_edge_to_cell(cell, 18, 43, 22, 45, 20, 44, 44);
+    add_edge_to_cell(cell, 19, 17, 20, 43, 43, 42, 42);
 
     edgeAxis(edge_Axis, 1, 2, 1)
     edgeAxis(edge_Axis, 3, 4, 1)
@@ -682,9 +899,13 @@ def background():
 ################################The graph is defined above this############
 
 
-    arena_config = {0: ("Water Pitcher", 6, "2-2"), 2: ("Pebble", 8 , "3-3"), 4: ("Pebble", 16, "2-2"),
-                    6: ("Pebble", 19, "1-1")}                                                                  #using only the first two dictionary keys for progress task
+    arena_config =  {0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble",  14, "1-1"), 3: ("Pebble",   1 , "2-2"),
+                    5: ("Pebble", 15, "3-3")}                                                                  #using only the first two dictionary keys for progress task
     Robot_start = "START - 1"
+    if (Robot_start == "START - 1"):
+        START = 16
+    else:
+        START = 1
 
 
 
@@ -712,162 +933,46 @@ def background():
 
     """
     startaxis = 2                       #the axis at either starting point is always 2
+    START = 16
 
+    ##################FIND ALL POSSIBLE PATHS BETWEEN THE PEBBLES AND WATER PITCHER#############
+    #####(AS IN CHANGE THE ORDER OF THE PEBBLES TO BE TRAVERSED)##############
+    Path1 = calculatePath(arena_config,W1,P1,P2,P3, Robot_start)            #First go to pebble P1, then P2 and then P3
+    Path2 = calculatePath(arena_config,W1,P2,P1,P3, Robot_start)            #First go to pebble P2, then P1 and then P3
+    Path3 = calculatePath(arena_config,W1,P2,P3,P1, Robot_start)            #First go to pebble P2, then P3 and then P1
+    Path4 = calculatePath(arena_config,W1,P1,P3,P2, Robot_start)            #First go to pebble P1, then P3 and then P2
+    Path5 = calculatePath(arena_config,W1,P3,P2,P1, Robot_start)            #First go to pebble P3, then P2 and then P1
+    Path6 = calculatePath(arena_config,W1,P3,P1,P2, Robot_start)            #First go to pebble P3, then P1 and then P2
 
-    if(arena_config[P1][2]=="1-1"):
-        axis = 2
-    elif (arena_config[P1][2] == "2-2"):
-        axis = 3
-    if (arena_config[P1][2] == "3-3"):
-        axis = 1
+    arrayPath = [Path1,Path2,Path3,Path4,Path5,Path6]
+    arrayLengthPath = [len(Path1),len(Path2),len(Path3),len(Path4),len(Path5),len(Path6)]
 
-    if (arena_config[W1][2] == "1-1"):
-        axisWater = 2
-    elif (arena_config[W1][2] == "2-2"):
-        axisWater = 3
-    if (arena_config[W1][2] == "3-3"):
-        axisWater = 1
-
-    if (arena_config[P2][2] == "1-1"):
-        axis_Pebble2 = 2
-    elif (arena_config[P2][2] == "2-2"):
-        axis_Pebble2 = 3
-    if (arena_config[P2][2] == "3-3"):
-        axis_Pebble2 = 1
-
-    if (arena_config[P3][2] == "1-1"):
-        axis_Pebble3 = 2
-    elif (arena_config[P3][2] == "2-2"):
-        axis_Pebble3 = 3
-    if (arena_config[P3][2] == "3-3"):
-        axis_Pebble3 = 1
-
-    cellNo = arena_config[P1][1]
-    cellNo_pebble2 = arena_config[P2][1]
-    cellNo_pebble3 = arena_config[P3][1]
-
-    water = arena_config[W1][1]
-
-
-    if(Robot_start == "START - 1"):
-        source = 1
-    elif (Robot_start == "START - 2"):
-        source = 16
-
-
-    PN1, PN2 = cellToNode(cell, cellNo, axis)                  #getting the two possible destination nodes for pebble 1
-    P2N1,P2N2 = cellToNode(cell, cellNo_pebble2, axis_Pebble2) #getting the two possible destination nodes for pebble 2
-    P3N1,P3N2 = cellToNode(cell, cellNo_pebble3, axis_Pebble3) #getting the two possible destination nodes for pebble 3
-    WN1, WN2 = cellToNode(cell, water, axisWater)       #getting the two possible destination nodes for water pitcher
-    pathN1 = printShortestDistance(adjV, source, PN1)   #path for pebble 1 at Node 1
-    pathN2 = printShortestDistance(adjV, source, PN2)   #path for pebble 1 at Node 2
-
-    if (len(pathN1) < len(pathN2)):
-        print("We choose path N1")                      #deciding which of the two nodes for pebble is closer
-        choice = pathN1
-    elif (len(pathN2) < len(pathN1)):
-        print("We choose path N2")
-        choice = pathN2
-    else:
-        print("Both distances are same")
-        choice = pathN1
-
-    pathW1 = printShortestDistance(adjV, choice[len(choice) - 1], WN1)  #path for Water Pitcher from Pebble 1
-    pathW2 = printShortestDistance(adjV, choice[len(choice) - 1], WN2)
-
-    if (len(pathW1) < len(pathW2)):
-        print("We choose path W1")                      #deciding which of the two nodes for water pitcher is closer
-        choiceW = pathW1
-    elif (len(pathW2) < len(pathW1)):
-        print("We choose path W2")
-        choiceW = pathW2
-    else:
-        print("Both distances are same")
-        choiceW = pathW1
-
-    print("DistanceP:", len(choiceW)+len(choice))
-
-    pathP21 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N1)          #WATER PICTHER TO PEBBLE!
-    pathP22 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N1)
-
-    if (len(pathP21) < len(pathP22)):
-        print("We choose path P21")                      #deciding which of the two nodes for water pitcher is closer
-        choiceP2 = pathP21
-    elif (len(pathP22) < len(pathP21)):
-        print("We choose path P22")
-        choiceP2 = pathP22
-    else:
-        print("Both distances are same")
-        choiceP2 = pathP21
+    print("Path1:",Path1)
+    print("Path2:",Path2)
+    print("Path3:",Path3)
+    print("Path4:",Path4)
+    print("Path5:",Path5)
+    print("Path6:",Path6)
 
 
 
-    pathW21 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN1)     #path for Water Pitcher from Pebble 2
-    pathW22 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN2)
-
-    if (len(pathW21) < len(pathW22)):
-        print("We choose path W1")  # deciding which of the two nodes for water pitcher is closer
-        choiceW2 = pathW21
-    elif (len(pathW22) < len(pathW21)):
-        print("We choose path W2")
-        choiceW2 = pathW22
-    else:
-        print("Both distances are same")
-        choiceW2 = pathW21
-
-
-    pathP31 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N1)
-    pathP32 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N2)
-
-    if (len(pathP31) < len(pathP32)):
-        print("We choose path P31")  # deciding which of the two nodes for water pitcher is closer
-        choiceP3 = pathP31
-    elif (len(pathP32) < len(pathP31)):
-        print("We choose path P32")
-        choiceP3 = pathP32
-    else:
-        print("Both distances are same")
-        choiceP3 = pathP31
-
-    pathW31 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN1)     #path for Water Pitcher from Pebble 2
-    pathW32 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN2)
-
-    if (len(pathW31) < len(pathW32)):
-        print("We choose path W1")  # deciding which of the two nodes for water pitcher is closer
-        choiceW3 = pathW31
-    elif (len(pathW32) < len(pathW31)):
-        print("We choose path W2")
-        choiceW3 = pathW32
-    else:
-        print("Both distances are same")
-        choiceW3 = pathW31
-
-    axisP = pathToAxis(choice, edge_Axis)
-    axisPathPebble = pathToAxis(choice, edge_Axis)          #changing path for start point to pebble in terms of axis
-    print("AxisP:", axisPathPebble)
-
-    axisPathPebble2 = pathToAxis(choiceP2, edge_Axis)  # changing path for start point to pebble in terms of axis
-    print("AxisP2:", axisPathPebble2)
-
-    axisPathPebble3 = pathToAxis(choiceP3, edge_Axis)  # changing path for start point to pebble in terms of axis
-    print("AxisP3:", axisPathPebble3)
-
-    axisPathWaterpi = pathToAxis(choiceW, edge_Axis)        #changing path for pebble 1 to water pitcher in terms of axis
-    print("AxisW:", axisPathWaterpi)
-
-    axisPathWaterpi2 = pathToAxis(choiceW2, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
-    print("AxisW:", axisPathWaterpi2)
-
-    axisPathWaterpi3 = pathToAxis(choiceW3, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
-    print("AxisW:", axisPathWaterpi3)
-
-    pebbleWay = axisToIns(axisP, axisPathWaterpi, startaxis, axis, axisWater,0,1)       
-    pebble2Way = axisToIns(axisPathPebble2, axisPathWaterpi2, axisWater, axis_Pebble2, axisWater,0,0)
-    pebble3Way = axisToIns(axisPathPebble3, axisPathWaterpi3, axisWater, axis_Pebble3, axisWater,1,0)
-    
+    ###############CHECK WHICH PATH IS SHORTEST AND FOLLOW THAT#####################
+    finalPathToBot = arrayPath[arrayLengthPath.index(min(arrayLengthPath))]
     #FINAL INSTRUCTION#
-    finalPathToBot = pebbleWay + pebble2Way + pebble3Way        
     print(finalPathToBot)
+
+    if(finalPathToBot == Path1):
+        PebbleAR1,PebbleAR2,PebbleAR3 = P1,P2,P3
+    elif(finalPathToBot == Path2):
+        PebbleAR1,PebbleAR2,PebbleAR3 = P2,P1,P3
+    elif (finalPathToBot == Path3):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P1, P3, P1
+    elif (finalPathToBot == Path4):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P1, P3, P2
+    elif (finalPathToBot == Path5):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P3, P2, P1
+    elif (finalPathToBot == Path5):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P3, P1, P2
 
     ###################################XBee communication###########################################
     ser = serial.Serial("COM4", 9600, timeout=0.002)        # COM4 was used on our device
@@ -921,15 +1026,6 @@ def init_gl():
     global texture_object, texture_background
     global crow, pebble, pebble_dim, waterE, waterF, waterM1, waterM2
 
-     #the obj files for the Crow animation is loaded along with the emoji that represents its current emotions#
-    load('crowEmoji',frames)                    #Crow animation flying to the pebble
-
-    load('bend',frames_bend)                    #Crow animation with bent neck
-
-    load('crowEmojiPebble',frames_crowrock)     #Crow animation flying the pebble back to the water pitcher
-
-
-
     waterE = OBJ('pitcher.obj', swapyz=True)                #obj for the Water pitcher (Empty)
 
     waterM1 = OBJ('pitcherMiddle1.obj', swapyz=True)        #obj for the Water pitcher (Medium 1)
@@ -939,7 +1035,34 @@ def init_gl():
 
 
     pebble = OBJ('finalrock.obj', swapyz=True)              #obj for the initial pebble stack
-    pebble_dim = OBJ('finalrockDiminished.obj', swapyz=True)#obj for the diminished pebble stack
+    pebble_dim = OBJ('PebbleDim.obj', swapyz=True)#obj for the diminished pebble stack
+
+     #the obj files for the Crow animation is loaded along with the emoji that represents its current emotions#
+
+    #The if statement simply loads one of the two versions of the crow models we have depending on the Start position.
+    #This is purely for aesthetics purposes since we realized that the same model didn't look good on both sides
+    #Since the emoji part is supposed to stay beyond the crow, we simple made two models, each being the mirror image
+    #of each other on the Y - Axis. Transforming the image to flip it in code was not consistent so we made two models instead.
+    #This doesn't take extra time since only one model is loaded, either the one at start-1 or at start-2
+
+    if Robot_start == "START - 1":
+        load('crowEmoji', frames)  # Crow animation flying to the pebble
+
+        load('bend', frames_bend)  # Crow animation with bent neck
+
+        load('crowEmojiPebble', frames_crowrock)  # Crow animation flying the pebble back to the water pitcher
+
+    elif Robot_start == "START - 2":
+
+        load('crowEmoji2',frames)                    #Crow animation flying to the pebble
+
+        load('Bend2',frames_bend)                    #Crow animation with bent neck
+
+        load('crowEmojiPebble2',frames_crowrock)     #Crow animation flying the pebble back to the water pitcher
+
+
+
+
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -1192,7 +1315,7 @@ Purpose: Receives the ArUco information as input and overlays the 3D Model of a 
 
 
 def overlay(img, ar_list, ar_id, texture_file):
-    global flag
+    global flag, bend, CrowPick, CrowBeakClose
     for x in ar_list:
         if ar_id == x[0]:
             centre, rvec, tvecs = x[1], x[2], x[3]
@@ -1216,54 +1339,65 @@ def overlay(img, ar_list, ar_id, texture_file):
 
     glPushMatrix()
     glLoadMatrixd(view_matrix)
+    print(PebbleAR1,PebbleAR2,PebbleAR3)
+    ##########Asigning different Models to different arucos##########################
 
 
 
-
-    if str(ar_id) == W1:
+    if ar_id == 0:                               #AR ID for water pitcher is always 0
 
 
         if flag == 0:
             glCallList(waterE.gl_list)
         elif flag == 'd':
             glCallList(waterM1.gl_list)
+            CrowPick = 0
+            CrowBeakClose = 1
         elif flag == 'c':
             glCallList(waterM2.gl_list)
+            CrowPick = 0
+            CrowBeakClose = 1
         elif flag == 'f':
             glCallList(waterF.gl_list)
+            bend = 1
 
-    if (str(ar_id) == P1):
-        glScale(3.5, 3.5,3.5)
+    if (ar_id) == PebbleAR1:                          #AR ID for pebble  1
+        glScale(2.8, 2.8,2.8)
         if flaga == 0:
             glCallList(pebble.gl_list)
         elif flaga == 'p':
             glCallList(pebble_dim.gl_list)
+            CrowPick = 1
+            CrowBeakClose = 0
 
-    if (str(ar_id) == P2):
-        glScale(3.5, 3.5,3.5)
+    if ar_id == PebbleAR2:                           #AR ID for Pebble 2
+        glScale(2.8, 2.8,2.8)
         if flagb == 0:
             glCallList(pebble.gl_list)
         elif flagb == 'p':
             glCallList(pebble_dim.gl_list)
+            CrowPick = 1
+            CrowBeakClose = 0
 
-    if (str(ar_id) == P3):
-        glScale(3.5, 3.5,3.5)
+    if ar_id == PebbleAR3:                               #AR ID for Pebble 3
+        glScale(2.8, 2.8,2.8)
         if flagc == 0:
             glCallList(pebble.gl_list)
+            print("FLAGC",flagc)
         elif flagc == 'p':
             glCallList(pebble_dim.gl_list)
+            CrowPick = 1
+            CrowBeakClose = 0
+            print("FLAGC",flagc)
 
-    if str(ar_id) == '10':
+    if str(ar_id) == '10':                              #AR ID for crow is always 10
         glScale(1.25,1.25,1.25)
-        if flaga == 0 or flag == 'd' or flag == 'c' or flag == 'd' or flag == 'c':
-            glCallList(next_frame(frames))
-        elif (flaga == 'p' or flagb == 'p' or flagc == 'p') and flag != 'f':
-            print("PEBBLE")
-            glCallList(next_frame(frames_crowrock))
-        
-        elif  (flag == 'f'):
-            print("BEND")
+        if(bend ==1):
             glCallList(next_frame(frames_bend))
+        elif(flaga == 'p' and flag == 0) or (flagb == 'p' and flag == 'd') or (flagc == 'p' and flag == 'c'):
+            glCallList(next_frame(frames_crowrock))
+        elif(flag == 'd' and flagb == 0) or (flag == 'c' and flagc ==0) or (flag == 0 and flaga == 0):
+            glCallList(next_frame(frames))
 
 
 
