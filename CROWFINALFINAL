@@ -581,12 +581,14 @@ int main(void)
 					forward();
 					_delay_ms(170);
 				left();
+				_delay_ms(150);
 
 				}
 				else if(ins[j]=='r'){		//Turn right 30 degrees
 					forward();
 					_delay_ms(170);
 					right();
+					_delay_ms(150);
 
 				}
 				else if(ins[j]=='s'){		//picking up pebble
@@ -596,7 +598,7 @@ int main(void)
 											//to overcome this we gave it opposite polarity for small interval of time
 											//this solved the problem just fine
 					stop();
-					servoaction(60);		//arms is brought down
+					servoaction(63);		//arms is brought down
 					_delay_ms(100);
 					forward();				//bot moves forward
 					/*velocity(255,210);*/
@@ -696,9 +698,9 @@ int main(void)
 				}
 				else if(ins[j]=='q'){			//turn right to align axis of the robot with the axis of the aruco marker
 					forward();
-					_delay_ms(150);
+					_delay_ms(190);
 					right();
- 					_delay_ms(450);
+ 					_delay_ms(400);
 
 					backward();					//go backward to continue line following and encounter the destination node with the axes aligned
 					_delay_ms(300);
