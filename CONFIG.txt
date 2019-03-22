@@ -1,0 +1,30 @@
+{0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  1, "2-2"), 3: ("Pebble2",   3 , "1-1"),
+                    5: ("Pebble3", 12, "3-3")}
+
+{0: ("Water Pitcher", 5, "1-1"), 1: ("Pebble1",  9, "1-1"), 3: ("Pebble2",   14 , "3-3"),
+                    5: ("Pebble3", 19, "3-3")}
+
+{0: ("Water Pitcher", 15, "2-2"), 1: ("Pebble1",  16, "1-1"), 3: ("Pebble2",   11 , "3-3"),
+                    5: ("Pebble3", 17, "2-2")}
+
+{0: ("Water Pitcher", 11, "3-3"), 1: ("Pebble1",  7, "1-1"), 3: ("Pebble2",   13 , "2-2"),
+                    5: ("Pebble3", 14, "3-3")}
+
+//check this for time
+{0: ("Water Pitcher", 1, "1-1"), 1: ("Pebble1",  10, "3-3"), 3: ("Pebble2",   17 , "1-1"),
+                    5: ("Pebble3", 14, "2-2")}
+
+{0: ("Water Pitcher", 3, "3-3"), 1: ("Pebble1",  6, "2-2"), 3: ("Pebble2",   13 , "3-3"),
+                    5: ("Pebble3", 11, "1-1")}
+
+{0: ("Water Pitcher", 10, "1-1"), 1: ("Pebble1",  5, "3-3"), 3: ("Pebble2",   11 , "2-2"),
+                    5: ("Pebble3", 4, "1-1")}
+
+{0: ("Water Pitcher", 2, "3-3"), 1: ("Pebble1",  8, "1-1"), 3: ("Pebble2",   13 , "2-2"),
+                    5: ("Pebble3", 12, "3-3")}
+
+{0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  14, "1-1"), 3: ("Pebble2",   8 , "3-3"),
+                    5: ("Pebble3", 13, "2-2")}
+
+{0: ("Water Pitcher", 11, "3-3"), 1: ("Pebble1",  7, "1-1"), 3: ("Pebble2",   13 , "2-2"),
+                    5: ("Pebble3", 14, "3-3")}
