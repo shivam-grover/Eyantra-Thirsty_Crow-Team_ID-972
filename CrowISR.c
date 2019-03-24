@@ -382,7 +382,7 @@ void right()
 
 void soft_left()
 {
-	//velocity(220,220);
+	velocity(220,220);
 	PORTA = 0x02;		//setting pin 2 of Port A as logic 1
 }
 
@@ -396,7 +396,7 @@ void soft_left()
 
 void soft_right()
 {
-	//velocity(220,220);
+	velocity(220,220);
 	PORTA = 0x08;		//setting pin 1 of port A as logic 1
 }
 
