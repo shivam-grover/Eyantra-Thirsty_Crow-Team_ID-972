@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 import cv2.aruco as aruco
@@ -298,8 +297,8 @@ def pathToAxis(path, edge_Axis, axis, first):
         if (first==0):
             pathinAxis.append(-1)
             pathinAxis.append(axis)
-        elif(first==1):
-            pathinAxis.append(2)
+        # elif(first==1):
+        #     pathinAxis.append(2)
     return pathinAxis
 
 
@@ -326,13 +325,475 @@ Purpose: converts an axis list to instructions consisting of characters, each de
 """
 
 
+# def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, first):
+#     ins = []  # ARRAY TO STORE INSTRUCTIONS
+#
+#     # First turn for the pebble
+#
+#     if (axisIns[0] != -1 and len(axisIns) > 1):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] == axisP):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] != axisP):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] == -1):
+#         if (startAxis == 2 and axisIns[1] == 3):
+#             ins.append('w')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 2 and axisIns[1] == 1):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[1] == 3):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[1] == 1):
+#             ins.append('w')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[1] == 2):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[1] == 2):
+#             ins.append('w')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == axisIns[1]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#
+#     ######   PATH FOR FIRST PEBBLE    #######
+#     if (len(axisIns) - 1 > 0 and axisIns[0] != -1):  # since the first turn is already decided, if the path
+#         # has only one turn before the destination is reached
+#         # we don't go through this for loop
+#         for i in range(1, len(axisIns)):
+#             if (axisIns[i - 1] == 1 and axisIns[i] == 3):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == 3 and axisIns[i] == 1):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 2 and axisIns[i] == 3):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 3 and axisIns[i] == 2):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == 1 and axisIns[i] == 2):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 2 and axisIns[i] == 1):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == axisIns[i]):
+#                 ins.append('b')
+#
+#             ######   ALIGNMENT WITH THE AXES    #######
+#
+#             if (i == len(axisIns) - 1):
+#                 if (axisIns[i] == axisP):
+#                     ins.append('s')
+#                 elif (axisIns[i] == 2 and axisP == 1):
+#                     ins.append('q')  # right by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(1)
+#                 elif (axisIns[i] == 1 and axisP == 2):
+#                     ins.append('w')  # left by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(2)
+#                 elif (axisIns[i] == 3 and axisP == 2):
+#                     ins.append('q')  # left by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(2)
+#                 elif (axisIns[i] == 2 and axisP == 3):
+#                     ins.append('w')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(3)
+#                 elif (axisIns[i] == 1 and axisP == 3):
+#                     ins.append('q')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(3)
+#                 elif (axisIns[i] == 3 and axisP == 1):
+#                     ins.append('w')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(1)
+#     else:
+#         if first == 0:
+#             i = 0
+#             if (axisIns[i] == axisP):
+#                 ins.append('s')
+#             elif (axisIns[i] == 2 and axisP == 1):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#                 ins.append('s')
+#                 axisIns.append(1)
+#             elif (axisIns[i] == 1 and axisP == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 3 and axisP == 2):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 2 and axisP == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 1 and axisP == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 3 and axisP == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#         elif (first == 1):
+#             i = 0
+#             # if (axisIns[i] == axisP):
+#             #     ins.append('s')
+#             if (axisIns[i] == 2 and axisP == 1):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#             elif (axisIns[i] == 1 and axisP == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 3 and axisP == 2):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 2 and axisP == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 1 and axisP == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 3 and axisP == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#
+#     ######   FIRST TURN FOR WATER PITCHER    #######
+#
+#     if (axisPathWaterpi[0] != -1):
+#
+#         if (axisIns[len(axisIns) - 1] == axisPathWaterpi[0]):
+#             ins.append('a')
+#         elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 2):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 1):
+#             ins.append('l')
+#         elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 3):
+#             ins.append('l')
+#         elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 1):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 3):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 2):
+#             ins.append('l')
+#     elif (axisPathWaterpi[0] == -1):
+#         if (final == 0):
+#             if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+#                 ins.append('a')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#         if (final == 1):
+#             if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+#                 ins.append('a')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#
+#     ######   PATH FOR WATER PITCHER    #######
+#
+#     if ((len(axisPathWaterpi) - 1) > 0 and axisPathWaterpi[
+#         0] != -1):  # since the first turn is already decided, if the path
+#         # has only one turn before the destination is reached
+#         # we don't go through this for loop
+#         for i in range(1, len(axisPathWaterpi)):
+#
+#             if (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 3):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 1):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 3):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 2):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 2):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 1):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == axisPathWaterpi[i]):
+#                 ins.append('b')
+#
+#             ######   ALIGNMENT OF AXES    #######
+#
+#             if (i == len(axisPathWaterpi) - 1):
+#
+#                 if (final == 0):  # checking if final pebble
+#                     if (axisPathWaterpi[i] == axisWater):
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                         ins.append('q')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                         ins.append('q')  # right by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                         ins.append('q')
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                         ins.append('w')
+#                         ins.append('a')
+#                         ins.append('d')
+#                 else:
+#                     if (axisPathWaterpi[i] == axisWater):
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                         ins.append('q')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                         ins.append('q')  # right by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                         ins.append('q')
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                         ins.append('w')
+#                         ins.append('a')
+#                         ins.append('f')
+#     else:
+#         i = 0
+#         if (final == 0):  # checking if final pebble
+#             if (axisPathWaterpi[i] == axisWater):
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 # ins.append('q')  # right by 60 degrees
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#         else:
+#             if (axisPathWaterpi[i] == axisWater):
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 # ins.append('q')  # right by 60 degrees
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#
+#     print(ins)
+#     return ins
+
 def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, first):
     ins = []  # ARRAY TO STORE INSTRUCTIONS
 
     # First turn for the pebble
 
-    if(axisIns[0]!=-1):
-        if (startAxis == 2 and axisIns[0] == 3):
+    if (axisIns[0] != -1):
+
+        if (axisIns[0] == startAxis):
+            ins.append('a')
+        elif (startAxis == 1 and  axisIns[0]== 2):
             ins.append('r')
         elif (startAxis == 2 and axisIns[0] == 1):
             ins.append('l')
@@ -340,43 +801,44 @@ def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, firs
             ins.append('l')
         elif (startAxis == 3 and axisIns[0] == 1):
             ins.append('r')
+        elif (startAxis == 2 and axisIns[0] == 3):
+            ins.append('r')
         elif (startAxis == 3 and axisIns[0] == 2):
             ins.append('l')
-        elif (startAxis == 1 and axisIns[0] == 2):
-            ins.append('r')
-        elif (startAxis == axisIns[0]):
-            if (first == 1):
-                ins.append('s')
-            else:
-                ins.append('a')
-    elif(axisIns[0]==-1):
-        if (startAxis == 2 and axisIns[1] == 3):
-            ins.append('w')
-            ins.append('s')
+    elif (axisIns[0] == -1):
 
+        if (startAxis == axisIns[1]):
+            ins.append('a')
+        elif (startAxis == 1 and axisIns[1] == 2):
+            ins.append('w')
+            ins.append('a')
+            ins.append('s')
         elif (startAxis == 2 and axisIns[1] == 1):
             ins.append('q')
+            ins.append('a')
             ins.append('s')
         elif (startAxis == 1 and axisIns[1] == 3):
             ins.append('q')
+            ins.append('a')
             ins.append('s')
         elif (startAxis == 3 and axisIns[1] == 1):
             ins.append('w')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 2 and axisIns[1] == 3):
+            ins.append('w')
+            ins.append('a')
             ins.append('s')
         elif (startAxis == 3 and axisIns[1] == 2):
             ins.append('q')
+            ins.append('a')
             ins.append('s')
-        elif (startAxis == 1 and axisIns[1] == 2):
-            ins.append('w')
-            ins.append('s')
-        elif (startAxis == axisIns[1]):
-            if (first == 1):
-                ins.append('s')
-            else:
-                ins.append('a')
 
-    ######   PATH FOR FIRST PEBBLE    #######
-    if (len(axisIns) - 1 > 0 and axisIns[0]!=-1):  # since the first turn is already decided, if the path
+
+
+
+
+    if (len(axisIns) - 1 > 0 and axisIns[0] != -1):  # since the first turn is already decided, if the path
         # has only one turn before the destination is reached
         # we don't go through this for loop
         for i in range(1, len(axisIns)):
@@ -402,87 +864,213 @@ def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, firs
                     ins.append('s')
                 elif (axisIns[i] == 2 and axisP == 1):
                     ins.append('q')  # right by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(1)
                 elif (axisIns[i] == 1 and axisP == 2):
                     ins.append('w')  # left by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(2)
                 elif (axisIns[i] == 3 and axisP == 2):
                     ins.append('q')  # left by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(2)
                 elif (axisIns[i] == 2 and axisP == 3):
                     ins.append('w')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(3)
                 elif (axisIns[i] == 1 and axisP == 3):
                     ins.append('q')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(3)
                 elif (axisIns[i] == 3 and axisP == 1):
                     ins.append('w')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(1)
     else:
-        if first == 0:
+        # if first == 0:
             i = 0
             if (axisIns[i] == axisP):
                 ins.append('s')
             elif (axisIns[i] == 2 and axisP == 1):
                 ins.append('q')  # right by 60 degrees
+                ins.append('a')
                 ins.append('s')
                 axisIns.append(1)
             elif (axisIns[i] == 1 and axisP == 2):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
                 ins.append('s')
                 axisIns.append(2)
             elif (axisIns[i] == 3 and axisP == 2):
                 ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(2)
             elif (axisIns[i] == 2 and axisP == 3):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(3)
             elif (axisIns[i] == 1 and axisP == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(3)
             elif (axisIns[i] == 3 and axisP == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(1)
-        elif(first==1):
-            i=0
-            if (axisIns[i] == 2 and axisP == 1):
-                ins.append('q')  # right by 60 degrees
-                ins.append('s')
-                axisIns.append(1)
-            elif (axisIns[i] == 1 and axisP == 2):
-                ins.append('w')  # left by 60 degrees
-                ins.append('s')
-                axisIns.append(2)
-            elif (axisIns[i] == 3 and axisP == 2):
-                ins.append('q')  # left by 60 degrees
-                ins.append('s')
-                axisIns.append(2)
-            elif (axisIns[i] == 2 and axisP == 3):
-                ins.append('w')
-                ins.append('s')
-                axisIns.append(3)
-            elif (axisIns[i] == 1 and axisP == 3):
-                ins.append('q')
-                ins.append('s')
-                axisIns.append(3)
-            elif (axisIns[i] == 3 and axisP == 1):
-                ins.append('w')
-                ins.append('s')
-                axisIns.append(1)
+        # elif (first == 1):
+        #     i = 0
+        #     # if (axisIns[i] == axisP):
+        #     #     ins.append('s')
+        #     if (axisIns[i] == 2 and axisP == 1):
+        #         ins.append('q')  # right by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(1)
+        #     elif (axisIns[i] == 1 and axisP == 2):
+        #         ins.append('w')  # left by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(2)
+        #     elif (axisIns[i] == 3 and axisP == 2):
+        #         ins.append('q')  # left by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(2)
+        #     elif (axisIns[i] == 2 and axisP == 3):
+        #         ins.append('w')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(3)
+        #     elif (axisIns[i] == 1 and axisP == 3):
+        #         ins.append('q')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(3)
+        #     elif (axisIns[i] == 3 and axisP == 1):
+        #         ins.append('w')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(1)
+
+
+
+
+    #
+    # if (axisIns[0] != -1 and len(axisIns) > 1):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] == axisP):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] != axisP):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] == -1):
+    #     if (startAxis == 2 and axisIns[1] == 3):
+    #         ins.append('w')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 2 and axisIns[1] == 1):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[1] == 3):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[1] == 1):
+    #         ins.append('w')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[1] == 2):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[1] == 2):
+    #         ins.append('w')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == axisIns[1]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+
+    ######   PATH FOR FIRST PEBBLE    #######
 
     ######   FIRST TURN FOR WATER PITCHER    #######
 
-    if(axisPathWaterpi[0]!=-1):
+    if (axisPathWaterpi[0] != -1):
 
         if (axisIns[len(axisIns) - 1] == axisPathWaterpi[0]):
             ins.append('a')
@@ -498,32 +1086,65 @@ def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, firs
             ins.append('r')
         elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 2):
             ins.append('l')
-    elif(axisPathWaterpi[0]==-1):
-        if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
-            ins.append('a')
-        elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
-            ins.append('w')
-            ins.append('d')
-
-        elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
-            ins.append('q')
-            ins.append('d')
-        elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
-            ins.append('q')
-            ins.append('d')
-        elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
-            ins.append('w')
-            ins.append('d')
-        elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
-            ins.append('w')
-            ins.append('d')
-        elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
-            ins.append('q')
-            ins.append('d')
+    elif (axisPathWaterpi[0] == -1):
+        if (final == 0):
+            if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+                ins.append('a')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+        if (final == 1):
+            if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+                ins.append('a')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
 
     ######   PATH FOR WATER PITCHER    #######
 
-    if ((len(axisPathWaterpi) - 1) > 0 and axisPathWaterpi[0]!=-1):  # since the first turn is already decided, if the path
+    if ((len(axisPathWaterpi) - 1) > 0 and axisPathWaterpi[0] != -1):  # since the first turn is already decided, if the path
         # has only one turn before the destination is reached
         # we don't go through this for loop
         for i in range(1, len(axisPathWaterpi)):
@@ -552,44 +1173,54 @@ def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, firs
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                         ins.append('q')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                         ins.append('w')  # left by 60 degrees
-                        # ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                         ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                         ins.append('w')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                         ins.append('q')
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                         ins.append('w')
+                        ins.append('a')
                         ins.append('d')
                 else:
                     if (axisPathWaterpi[i] == axisWater):
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                         ins.append('q')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                         ins.append('w')  # left by 60 degrees
-                        # ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                         ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                         ins.append('w')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                         ins.append('q')
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                         ins.append('w')
+                        ins.append('a')
                         ins.append('f')
     else:
         i = 0
@@ -598,44 +1229,68 @@ def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, firs
                 ins.append('d')
             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                 ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 # ins.append('q')  # right by 60 degrees
                 ins.append('d')
             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                 ins.append('q')  # right by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('d')
         else:
             if (axisPathWaterpi[i] == axisWater):
                 ins.append('f')
             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                 ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 # ins.append('q')  # right by 60 degrees
                 ins.append('f')
             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                 ins.append('q')  # right by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('f')
 
     print(ins)
@@ -891,11 +1546,11 @@ def background():
     add_edge_to_cell(cell, 7, 51, 54, 49, 52, 50, 53);
     add_edge_to_cell(cell, 8, 39, 52, 51, 40, 38, 41);
     add_edge_to_cell(cell, 9, 40, 40, 39, 39, 12, 15);
-    add_edge_to_cell(cell, 10, 33, 30, 1, 32, 2, 31);
+    add_edge_to_cell(cell, 10, 33, 30, 32, 32, 2, 31);
     add_edge_to_cell(cell, 11, 49, 48, 31, 54, 32, 47);
     add_edge_to_cell(cell, 12, 53, 46, 47, 44, 54, 45);
     add_edge_to_cell(cell, 13, 41, 44, 53, 42, 52, 43);
-    add_edge_to_cell(cell, 14, 15, 42, 16, 41, 40, 17);
+    add_edge_to_cell(cell, 14, 15, 42, 41, 41, 40, 17);
     add_edge_to_cell(cell, 15, 31, 31, 48, 48, 30, 27);
     add_edge_to_cell(cell, 16, 47, 47, 27, 46, 48, 25);
     add_edge_to_cell(cell, 17, 45, 45, 25, 22, 46, 46);
@@ -981,9 +1636,9 @@ def background():
 
     ################################The graph is defined above this############
 
-    arena_config = {0: ("Water Pitcher", 1, "1-1"), 1: ("Pebble", 10, "1-1"), 3: ("Pebble", 16, "3-3"),
-                    5: ("Pebble", 15, "1-1")}  # using only the first two dictionary keys for progress task
-    Robot_start = "START - 2"
+    arena_config={0: ("Water Pitcher", 17, "3-3"), 1: ("Pebble1",  16, "1-1"), 3: ("Pebble2",   18 , "2-2"),
+                    5: ("Pebble3", 7, "3-3")}
+    Robot_start ="START - 1"
     if (Robot_start == "START - 1"):
         START = 16
     else:
@@ -995,7 +1650,7 @@ def background():
     ####DISCLAIMER###########n
     """
     We had started defining the graph and working with the path planning right during task 3 and we were using
-    the image of the graph given in the rulebook with different cells numbered and we followed the axes given 
+    the image of the graph given in the rulebook with  different cells numbered and we followed the axes given 
     in it. Everything worked fine if we used that exact graph as a reference. But a couple of days before the 
     submission of the progress task we realized the axes in the actual arena are different:
 
@@ -1050,7 +1705,7 @@ def background():
         PebbleAR1, PebbleAR2, PebbleAR3 = P3, P1, P2
 
     ###################################XBee communication###########################################
-    ser = serial.Serial("COM4", 9600, timeout=0.00)  # COM4 was used on our device
+    ser = serial.Serial("COM8", 9600, timeout=0.00)  # COM4 was used on our device
 
     if (ser.isOpen()):
         while True:
