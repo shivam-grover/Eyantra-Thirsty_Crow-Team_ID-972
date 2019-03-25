@@ -7,33 +7,34 @@ arena_config ={0: ("Water Pitcher", 10, "1-1"), 1: ("Pebble1",  1, "2-2"), 3: ("
                     DONE
 
 {0: ("Water Pitcher", 5, "1-1"), 1: ("Pebble1",  9, "1-1"), 3: ("Pebble2",   14 , "3-3"),
-                    5: ("Pebble3", 19, "3-3")}
+                    5: ("Pebble3", 19, "3-3")}//DONE 
                   
  
 {0: ("Water Pitcher", 15, "2-2"), 1: ("Pebble1",  16, "1-1"), 3: ("Pebble2",   11 , "3-3"),
-                    5: ("Pebble3", 17, "2-2")}
+                    5: ("Pebble3", 17, "2-2")}//DONE (STARTED WITH THE NEW ALGO )
 
 {0: ("Water Pitcher", 11, "3-3"), 1: ("Pebble1",  7, "1-1"), 3: ("Pebble2",   13 , "2-2"),
                     5: ("Pebble3", 14, "3-3")}
+                    //DONE
 
 //check this for time
 {0: ("Water Pitcher", 1, "1-1"), 1: ("Pebble1",  10, "3-3"), 3: ("Pebble2",   17 , "1-1"),
                     5: ("Pebble3", 14, "2-2")}// working correctly for both 
 
 {0: ("Water Pitcher", 3, "3-3"), 1: ("Pebble1",  6, "2-2"), 3: ("Pebble2",   13 , "3-3"),
-                    5: ("Pebble3", 11, "1-1")}
+                    5: ("Pebble3", 11, "1-1")}//DONE
 
 {0: ("Water Pitcher", 10, "1-1"), 1: ("Pebble1",  5, "3-3"), 3: ("Pebble2",   11 , "2-2"),
-                    5: ("Pebble3", 4, "1-1")}
+                    5: ("Pebble3", 4, "1-1")}//DONE
 
 {0: ("Water Pitcher", 2, "3-3"), 1: ("Pebble1",  8, "1-1"), 3: ("Pebble2",   13 , "2-2"),
-                    5: ("Pebble3", 12, "3-3")}
+                    5: ("Pebble3", 12, "3-3")}//DONE
 
 {0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  14, "1-1"), 3: ("Pebble2",   8 , "3-3"),
-                    5: ("Pebble3", 13, "2-2")}
+                    5: ("Pebble3", 13, "2-2")}//DONE
 
 {0: ("Water Pitcher", 5, "1-1"), 1: ("Pebble1",  6, "2-2"), 3: ("Pebble2",   13 , "3-3"),
-                    5: ("Pebble3", 7, "1-1")}
+                    5: ("Pebble3", 7, "1-1")}//DONE 
 
 {0: ("Water Pitcher", 11, "3-3"), 1: ("Pebble1",  17, "1-1"), 3: ("Pebble2",   13 , "2-2"),
                     5: ("Pebble3", 18, "3-3")}//DONE
@@ -57,33 +58,4 @@ arena_config ={0: ("Water Pitcher", 10, "1-1"), 1: ("Pebble1",  1, "2-2"), 3: ("
 
 {0: ("Water Pitcher", 7, "2-2"), 1: ("Pebble1",  10, "1-1"), 3: ("Pebble2",   2 , "3-3"),
                     5: ("Pebble3", 11, "2-2")}
-
-{0: ("Water Pitcher", 7, "2-2"), 1: ("Pebble1",  10, "1-1"), 3: ("Pebble2",   6 , "3-3"),
-                    5: ("Pebble3", 11, "2-2")}
-
-{0: ("Water Pitcher", 7, "2-2"), 1: ("Pebble1",  14, "2-2"), 3: ("Pebble2",   8 , "1-1"),
-                    5: ("Pebble3", 13, "3-3")}
-
-{0: ("Water Pitcher", 12, "1-1"), 1: ("Pebble1",  16, "2-2"), 3: ("Pebble2",  18 , "1-1"),
-                    5: ("Pebble3", 17, "3-3")}
-
-{0: ("Water Pitcher", 1, "2-2"), 1: ("Pebble1",  3, "3-3"), 3: ("Pebble2",   2 , "1-1"),
-                    5: ("Pebble3", 4, "2-2")}
-
-{0: ("Water Pitcher", 15, "2-2"), 1: ("Pebble1",  11, "3-3"), 3: ("Pebble2",   16 , "2-2"),
-                    5: ("Pebble3", 10, "1-1")}
-
-{0: ("Water Pitcher", 19, "1-1"), 1: ("Pebble1",  18, "2-2"), 3: ("Pebble2",  13 , "1-1"),
-                    5: ("Pebble3", 12, "3-3")}
-                    
-{0: ("Water Pitcher", 13, "3-3"), 1: ("Pebble1",  7, "2-2"), 3: ("Pebble2",   12 , "1-1"),
-                    5: ("Pebble3", 11, "3-3")}
-
-{0: ("Water Pitcher", 12, "3-3"), 1: ("Pebble1",  18, "1-1"), 3: ("Pebble2",  11 , "2-2"),
-                    5: ("Pebble3", 16, "3-3")}
-
-{0: ("Water Pitcher", 7, "2-2"), 1: ("Pebble1",  18, "1-1"), 3: ("Pebble2",   17 , "3-3"),
-                    5: ("Pebble3", 19, "2-2")}
-                    
-{0: ("Water Pitcher", 3, "3-3"), 1: ("Pebble1",  4, "3-3"), 3: ("Pebble2",   9 , "2-2"),
-                    5: ("Pebble3", 8, "1-1")}                    
+                    DONE(pebble pickup!)(2)
