@@ -11,76 +11,76 @@ from objloader import *
 import serial
 import threading
 import os, glob
+
+
 texture_object = None
 texture_background = None
 camera_matrix = None
 dist_coeff = None
 
 cap = cv2.VideoCapture(1)
-width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))      #to get the width of the frame
-height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))    #to get the height of the frame
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # to get the width of the frame
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # to get the height of the frame
 INVERSE_MATRIX = np.array([[1.0, 1.0, 1.0, 1.0],
                            [-1.0, -1.0, -1.0, -1.0],
                            [-1.0, -1.0, -1.0, -1.0],
                            [1.0, 1.0, 1.0, 1.0]])
 
 ##Dictionaries to define the arena
-adjV = {}                  #A dictionary to store the vertices and their relation(edges) with other vertices
-                           #for each vertex as the key, the value(list) are the adjacent vertices to the key
+adjV = {}  # A dictionary to store the vertices and their relation(edges) with other vertices
+# for each vertex as the key, the value(list) are the adjacent vertices to the key
 for i in range(1, 55):
     adjV[i] = []
 
 
-cell = {}                  #A dictionary to store the cell Numbers and their relation to the vertices adjacent
-                           #to it and axes
+cell = {}  # A dictionary to store the cell Numbers and their relation to the vertices adjacent
+# to it and axes
 for i in range(1, 20):
     cell[i] = []
 
 
-edge_Axis = {}              #A dictionary to store the edges and the axes they're parallel to
+edge_Axis = {}  # A dictionary to store the edges and the axes they're parallel to
 for i in range(55):
     edge_Axis[i] = []
 
 START = 0
 Robot_start = ""
-#OBJ FILES#
+# OBJ FILES#
 crow = None
-pebble = None               #for the initial pebble stack
-pebble_dim = None           #for the final pebble stack
+pebble = None  # for the initial pebble stack
+pebble_dim = None  # for the final pebble stack
 
-waterE = None           #for the initial water pitcher
-waterM1 = None           #for the middle water pitcher 1
-waterM2 = None           #for the middle water pitcher 2
+waterE = None  # for the initial water pitcher
+waterM1 = None  # for the middle water pitcher 1
+waterM2 = None  # for the middle water pitcher 2
 
-waterF = None           #for the filled water pitcher
+waterF = None  # for the filled water pitcher
 global flag
 
-
-#Triggers for animation
-flag = 0                #to trigger animation for the water pitcher and crow
-flaga = 0               #to trigger animation for Pebblle 1
-flagb = 0               #to trigger animation for Pebblle 2
-flagc = 0               #to trigger animation for Pebblle 3
-bend = 0                #to trigger animation for the bending of the crow after the pitcher is full to signify drinking
-CrowPick = 0            #to trigger animation for the crow picking up the pebble in it's beak
-CrowBeakClose = 1       #to trigger animation for the crow dropping the pebble
+# Triggers for animation
+flag = 0  # to trigger animation for the water pitcher and crow
+flaga = 0  # to trigger animation for Pebblle 1
+flagb = 0  # to trigger animation for Pebblle 2
+flagc = 0  # to trigger animation for Pebblle 3
+bend = 0  # to trigger animation for the bending of the crow after the pitcher is full to signify drinking
+CrowPick = 0  # to trigger animation for the crow picking up the pebble in it's beak
+CrowBeakClose = 1  # to trigger animation for the crow dropping the pebble
 i = 1
-frames = []             #to store the obj files for crow animation
-frames_bend = []             #to store the obj files for crow animation of the crow bending its neck
+frames = []  # to store the obj files for crow animation
+frames_bend = []  # to store the obj files for crow animation of the crow bending its neck
 
-frames_crowrock = []    #to store the obj files for crow animation with pebble
+frames_crowrock = []  # to store the obj files for crow animation with pebble
 
 ################DICTIONARY INDEX NUMBERS FOR EACH PEBBLE AND WATER PITCHER#########
-P1=0
-P2=0
-P3=0
-W=0
-
+P1 =0
+P2 =0
+P3 =0
+W= 0
 
 ##Aruco IDs for pebbles
-PebbleAR1 = P1    #Initially following the order of pebbles they were given in the dictionary. This will be changed later
-                #in the function background() if the path of traversal would be shorter for a different order of pickup
-                #We will use these variables for projecting and animating the right model on the right aruco object.
+PebbleAR1 = P1  # Initially following the order of pebbles they were given in the dictionary. This will be changed later
+# in the function background() if the path of traversal would be shorter for a different order of pickup
+# We will use these variables for projecting and animating the right model on the right aruco object.
 PebbleAR2 = P2
 PebbleAR3 = P3
 ################## Define Utility Functions Here #######################
@@ -110,6 +110,7 @@ Purpose: Initialises OpenGL window and callback functions. Then starts the event
          processing loop.
 """
 
+
 def foreground():
     glutInit()
     global flag
@@ -124,6 +125,7 @@ def foreground():
     glutReshapeFunc(resize)
     glutMainLoop()
 
+
 """
 Function Name : main()
 Input: None
@@ -132,12 +134,14 @@ Purpose: assigns threads to foreground and background and starts them. We used t
 				part and one for recieving trigger flags from the robot after pickups and drops)
 """
 
+
 def main():
-    a = threading.Thread(name='foreground', target=foreground)				#the openGL part
-    b = threading.Thread(name='background', target=background)				#the path planning part and communication with the bot
+    a = threading.Thread(name='foreground', target=foreground)  # the openGL part
+    b = threading.Thread(name='background', target=background)  # the path planning part and communication with the bot
 
     b.start()
-    a.start()
+    #a.start()
+
 
 #################################################################################################3
 
@@ -148,10 +152,12 @@ Output: None
 Purpose: make Vertex V1 and V2 adjacent
 """
 
+
 def add_edge(dict, V1, V2):
     dict[V1].append(V2)
     dict[V2].append(V1)
-    #print("edge between: ", V1, V2)
+    # print("edge between: ", V1, V2)
+
 
 """
 Function Name : add_edge_to_cell()
@@ -159,6 +165,7 @@ Input: dict (dictionary for relation between cells and vertices), node11, node12
 Output: None
 Purpose: assigns vertices to the cell. the first two vertices lie on axis 1-1, next two on axis 2-2, and the later two on axis 3-3
 """
+
 
 def add_edge_to_cell(dict, cell, node11, node12, node21, node22, node31, node32):
     dict[cell].append(node11)
@@ -168,6 +175,7 @@ def add_edge_to_cell(dict, cell, node11, node12, node21, node22, node31, node32)
     dict[cell].append(node31)
     dict[cell].append(node32)
 
+
 """
 Function Name : cellToNode()
 Input: dict (dictionary for relation between cells and vertices), cellNo, axis(int)
@@ -175,18 +183,20 @@ Output: None
 Purpose: Gives two possible destination vertices Based on the cellNo and axis
 """
 
+
 def cellToNode(dict, cellNo, axis):
     if (axis == 1):
         N1 = dict[cellNo][0]
         N2 = dict[cellNo][1]
-    elif(axis==2):
+    elif (axis == 2):
         N1 = dict[cellNo][2]
         N2 = dict[cellNo][3]
-    elif(axis==3):
+    elif (axis == 3):
         N1 = dict[cellNo][4]
         N2 = dict[cellNo][5]
 
-    return N1,N2
+    return N1, N2
+
 
 """
 Function Name : edgeAxis()
@@ -195,10 +205,12 @@ Output: None
 Purpose: Assigns axis to a pair of adjacent vertices
 """
 
+
 def edgeAxis(dictE_A, V1, V2, axis):
     dictE_A[V1][V2] = axis
     # print("axis between:", V1, V2, axis)
     dictE_A[V2][V1] = axis
+
 
 """
 Function Name : printShortestDistance()
@@ -209,15 +221,15 @@ Purpose: Uses a modified version of BFS algorithm (and stores the predecessor as
         and returns and prints the shortest path as a list
 """
 
-def printShortestDistance(adjV, s, dest):
 
+def printShortestDistance(adjV, s, dest):
     pred = []
     dist = []
     path = []
-    if(s == dest):
+    if (s == dest):
         path.append(s)
     else:
-        pred = BFS(adjV,s,dest)
+        pred = BFS(adjV, s, dest)
         crawl = dest
         path.append(crawl)
         while (pred[crawl] != -1):
@@ -225,11 +237,10 @@ def printShortestDistance(adjV, s, dest):
             crawl = pred[crawl]
     # print(pred)
 
-
-
     path.reverse()
     print("path is: ", path)
     return path
+
 
 """
 Function Name : BFS()
@@ -239,33 +250,34 @@ Purpose: A modified version of BFS algorithm (and stores the predecessor as well
         to find the shortest path and return a list pred which contains the value of the predecessor vertex for the index as the current vertex
 """
 
+
 def BFS(adjV, src, dest):
     qu = []
-    visited = [False]*55
-    dist = [sys.maxsize]*55
-    pred = [-1]*55
+    visited = [False] * 55
+    dist = [sys.maxsize] * 55
+    pred = [-1] * 55
     # for i in range(1,55):
     #     dist[i] = sys.maxsize
     #     pred[i] = -1
 
+    visited[src] = True  # setting source as visited
+    dist[src] = 0  # distance of source from source is 0
+    qu.append(src)  # appending source to the queue
 
-    visited[src] = True                 # setting source as visited
-    dist[src] = 0                       #distance of source from source is 0
-    qu.append(src)                      #appending source to the queue
-
-    while(qu):
-        u = qu.pop(0)                   #storing the value before popping
+    while (qu):
+        u = qu.pop(0)  # storing the value before popping
         for i in range(len(adjV[u])):
-            if(visited[adjV[u][i]]==False):     #only processing if unvisited
-                visited[adjV[u][i]]=True        #set as visited
-                dist[adjV[u][i]] = dist[u]+1    #set distance one greater than the pred
-                pred[adjV[u][i]] = u            #set predecessor
-                qu.append(adjV[u][i])           #append current node in queue
+            if (visited[adjV[u][i]] == False):  # only processing if unvisited
+                visited[adjV[u][i]] = True  # set as visited
+                dist[adjV[u][i]] = dist[u] + 1  # set distance one greater than the pred
+                pred[adjV[u][i]] = u  # set predecessor
+                qu.append(adjV[u][i])  # append current node in queue
 
-                if(adjV[u][i]==dest):
+                if (adjV[u][i] == dest):
                     return pred
 
     return False
+
 
 """
 Function Name : pathToAxis()
@@ -274,16 +286,20 @@ Output: pathinAxis(A list which has the path to be taversed represented in axis 
 Purpose: converts a path list into an axis list. Since each axis is at 30 degrees angle in a hexagon, we can use axis to find whether to turn left or right at nodes
 """
 
-def pathToAxis(path,edge_Axis):
-    pathinAxis = []
-    if(len(path)-1>0):
-        for i in range(len(path)-1):
-            # print(len(path), path[i], path[i+1])
-            pathinAxis.append(edge_Axis[path[i]][path[i+1]])
-    else:
-        pathinAxis.append(2)
-    return pathinAxis
 
+def pathToAxis(path, edge_Axis, axis, first):
+    pathinAxis = []
+    if (len(path) - 1 > 0):
+        for i in range(len(path) - 1):
+            # print(len(path), path[i], path[i+1])
+            pathinAxis.append(edge_Axis[path[i]][path[i + 1]])
+    else:
+        if (first==0):
+            pathinAxis.append(-1)
+            pathinAxis.append(axis)
+        # elif(first==1):
+        #     pathinAxis.append(2)
+    return pathinAxis
 
 
 """
@@ -305,250 +321,981 @@ Purpose: converts an axis list to instructions consisting of characters, each de
          'q' : turn right by 60 degrees to align the axis of the robot and the AR object
          'w' : turn left by 60 degrees to align the axis of the robot and the AR object
          'f' : stop and drop the pebble and ring the buzzer and exit
-         
+
 """
 
 
-def axisToIns(axisIns,axisPathWaterpi, startAxis,axisP,axisWater,final,first):
-    ins = []        #ARRAY TO STORE INSTRUCTIONS
+# def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, first):
+#     ins = []  # ARRAY TO STORE INSTRUCTIONS
+#
+#     # First turn for the pebble
+#
+#     if (axisIns[0] != -1 and len(axisIns) > 1):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] == axisP):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#             ins.append('s')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] != axisP):
+#         if (startAxis == 2 and axisIns[0] == 3):
+#             ins.append('r')
+#         elif (startAxis == 2 and axisIns[0] == 1):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 3):
+#             ins.append('l')
+#         elif (startAxis == 3 and axisIns[0] == 1):
+#             ins.append('r')
+#         elif (startAxis == 3 and axisIns[0] == 2):
+#             ins.append('l')
+#         elif (startAxis == 1 and axisIns[0] == 2):
+#             ins.append('r')
+#         elif (startAxis == axisIns[0]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#     elif (axisIns[0] == -1):
+#         if (startAxis == 2 and axisIns[1] == 3):
+#             ins.append('w')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 2 and axisIns[1] == 1):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[1] == 3):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[1] == 1):
+#             ins.append('w')
+#             ins.append('s')
+#         elif (startAxis == 3 and axisIns[1] == 2):
+#             ins.append('q')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == 1 and axisIns[1] == 2):
+#             ins.append('w')
+#             ins.append('a')
+#             ins.append('s')
+#         elif (startAxis == axisIns[1]):
+#             if (first == 1):
+#                 ins.append('s')
+#             else:
+#                 ins.append('a')
+#
+#     ######   PATH FOR FIRST PEBBLE    #######
+#     if (len(axisIns) - 1 > 0 and axisIns[0] != -1):  # since the first turn is already decided, if the path
+#         # has only one turn before the destination is reached
+#         # we don't go through this for loop
+#         for i in range(1, len(axisIns)):
+#             if (axisIns[i - 1] == 1 and axisIns[i] == 3):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == 3 and axisIns[i] == 1):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 2 and axisIns[i] == 3):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 3 and axisIns[i] == 2):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == 1 and axisIns[i] == 2):
+#                 ins.append('r')
+#             elif (axisIns[i - 1] == 2 and axisIns[i] == 1):
+#                 ins.append('l')
+#             elif (axisIns[i - 1] == axisIns[i]):
+#                 ins.append('b')
+#
+#             ######   ALIGNMENT WITH THE AXES    #######
+#
+#             if (i == len(axisIns) - 1):
+#                 if (axisIns[i] == axisP):
+#                     ins.append('s')
+#                 elif (axisIns[i] == 2 and axisP == 1):
+#                     ins.append('q')  # right by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(1)
+#                 elif (axisIns[i] == 1 and axisP == 2):
+#                     ins.append('w')  # left by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(2)
+#                 elif (axisIns[i] == 3 and axisP == 2):
+#                     ins.append('q')  # left by 60 degrees
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(2)
+#                 elif (axisIns[i] == 2 and axisP == 3):
+#                     ins.append('w')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(3)
+#                 elif (axisIns[i] == 1 and axisP == 3):
+#                     ins.append('q')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(3)
+#                 elif (axisIns[i] == 3 and axisP == 1):
+#                     ins.append('w')
+#                     ins.append('a')
+#                     ins.append('s')
+#                     axisIns.append(1)
+#     else:
+#         if first == 0:
+#             i = 0
+#             if (axisIns[i] == axisP):
+#                 ins.append('s')
+#             elif (axisIns[i] == 2 and axisP == 1):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#                 ins.append('s')
+#                 axisIns.append(1)
+#             elif (axisIns[i] == 1 and axisP == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 3 and axisP == 2):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 2 and axisP == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 1 and axisP == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 3 and axisP == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#         elif (first == 1):
+#             i = 0
+#             # if (axisIns[i] == axisP):
+#             #     ins.append('s')
+#             if (axisIns[i] == 2 and axisP == 1):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#             elif (axisIns[i] == 1 and axisP == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 3 and axisP == 2):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(2)
+#             elif (axisIns[i] == 2 and axisP == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 1 and axisP == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(3)
+#             elif (axisIns[i] == 3 and axisP == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('s')
+#                 axisIns.append(1)
+#
+#     ######   FIRST TURN FOR WATER PITCHER    #######
+#
+#     if (axisPathWaterpi[0] != -1):
+#
+#         if (axisIns[len(axisIns) - 1] == axisPathWaterpi[0]):
+#             ins.append('a')
+#         elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 2):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 1):
+#             ins.append('l')
+#         elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 3):
+#             ins.append('l')
+#         elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 1):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 3):
+#             ins.append('r')
+#         elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 2):
+#             ins.append('l')
+#     elif (axisPathWaterpi[0] == -1):
+#         if (final == 0):
+#             if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+#                 ins.append('a')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('d')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('d')
+#         if (final == 1):
+#             if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+#                 ins.append('a')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+#                 ins.append('w')
+#                 ins.append('a')
+#                 ins.append('f')
+#             elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+#                 ins.append('q')
+#                 ins.append('a')
+#                 ins.append('f')
+#
+#     ######   PATH FOR WATER PITCHER    #######
+#
+#     if ((len(axisPathWaterpi) - 1) > 0 and axisPathWaterpi[
+#         0] != -1):  # since the first turn is already decided, if the path
+#         # has only one turn before the destination is reached
+#         # we don't go through this for loop
+#         for i in range(1, len(axisPathWaterpi)):
+#
+#             if (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 3):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 1):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 3):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 2):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 2):
+#                 ins.append('r')
+#             elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 1):
+#                 ins.append('l')
+#             elif (axisPathWaterpi[i - 1] == axisPathWaterpi[i]):
+#                 ins.append('b')
+#
+#             ######   ALIGNMENT OF AXES    #######
+#
+#             if (i == len(axisPathWaterpi) - 1):
+#
+#                 if (final == 0):  # checking if final pebble
+#                     if (axisPathWaterpi[i] == axisWater):
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                         ins.append('q')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                         ins.append('q')  # right by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                         ins.append('q')
+#                         ins.append('a')
+#                         ins.append('d')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                         ins.append('w')
+#                         ins.append('a')
+#                         ins.append('d')
+#                 else:
+#                     if (axisPathWaterpi[i] == axisWater):
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                         ins.append('q')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                         ins.append('q')  # right by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                         ins.append('w')  # left by 60 degrees
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                         ins.append('q')
+#                         ins.append('a')
+#                         ins.append('f')
+#                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                         ins.append('w')
+#                         ins.append('a')
+#                         ins.append('f')
+#     else:
+#         i = 0
+#         if (final == 0):  # checking if final pebble
+#             if (axisPathWaterpi[i] == axisWater):
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 # ins.append('q')  # right by 60 degrees
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('d')
+#         else:
+#             if (axisPathWaterpi[i] == axisWater):
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
+#                 ins.append('q')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 # ins.append('q')  # right by 60 degrees
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
+#                 ins.append('q')  # right by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
+#                 ins.append('w')  # left by 60 degrees
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
+#                 ins.append('q')
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
+#                 ins.append('w')
+#                 ins.append('a')
+#
+#                 ins.append('f')
+#
+#     print(ins)
+#     return ins
 
-    #First turn for the pebble
+def axisToIns(axisIns, axisPathWaterpi, startAxis, axisP, axisWater, final, first):
+    ins = []  # ARRAY TO STORE INSTRUCTIONS
 
-    if(startAxis==2 and axisIns[0]== 3):
-        ins.append('r')
-    elif(startAxis==2 and axisIns[0]==1):
-        ins.append('l')
-    elif (startAxis == 1 and axisIns[0] == 3):
-        ins.append('l')
-    elif (startAxis == 3 and axisIns[0] == 1):
-        ins.append('r')
-    elif (startAxis == 3 and axisIns[0] == 2):
-        ins.append('l')
-    elif (startAxis == 1 and axisIns[0] == 2):
-        ins.append('r')
-    elif (startAxis == axisIns[0]):
-        if(first==1):
-            ins.append('s')
-        else:
+    # First turn for the pebble
+
+    if (axisIns[0] != -1):
+
+        if (axisIns[0] == startAxis):
             ins.append('a')
+        elif (startAxis == 1 and  axisIns[0]== 2):
+            ins.append('r')
+        elif (startAxis == 2 and axisIns[0] == 1):
+            ins.append('l')
+        elif (startAxis == 1 and axisIns[0] == 3):
+            ins.append('l')
+        elif (startAxis == 3 and axisIns[0] == 1):
+            ins.append('r')
+        elif (startAxis == 2 and axisIns[0] == 3):
+            ins.append('r')
+        elif (startAxis == 3 and axisIns[0] == 2):
+            ins.append('l')
+    elif (axisIns[0] == -1):
+
+        if (startAxis == axisIns[1]):
+            ins.append('a')
+        elif (startAxis == 1 and axisIns[1] == 2):
+            ins.append('w')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 2 and axisIns[1] == 1):
+            ins.append('q')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 1 and axisIns[1] == 3):
+            ins.append('q')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 3 and axisIns[1] == 1):
+            ins.append('w')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 2 and axisIns[1] == 3):
+            ins.append('w')
+            ins.append('a')
+            ins.append('s')
+        elif (startAxis == 3 and axisIns[1] == 2):
+            ins.append('q')
+            ins.append('a')
+            ins.append('s')
 
 
-######   PATH FOR FIRST PEBBLE    #######
-    if (len(axisIns)-1>0):                                      #since the first turn is already decided, if the path
-                                                                #has only one turn before the destination is reached
-                                                                #we don't go through this for loop
-        for i in range(1,len(axisIns)):
-            if(axisIns[i-1]==1 and axisIns[i]==3):
+
+
+
+    if (len(axisIns) - 1 > 0 and axisIns[0] != -1):  # since the first turn is already decided, if the path
+        # has only one turn before the destination is reached
+        # we don't go through this for loop
+        for i in range(1, len(axisIns)):
+            if (axisIns[i - 1] == 1 and axisIns[i] == 3):
                 ins.append('l')
-            elif (axisIns[i-1] == 3 and axisIns[i] == 1):
+            elif (axisIns[i - 1] == 3 and axisIns[i] == 1):
                 ins.append('r')
-            elif(axisIns[i-1]==2 and axisIns[i]==3):
+            elif (axisIns[i - 1] == 2 and axisIns[i] == 3):
                 ins.append('r')
-            elif (axisIns[i-1] == 3 and axisIns[i] == 2):
+            elif (axisIns[i - 1] == 3 and axisIns[i] == 2):
                 ins.append('l')
-            elif(axisIns[i-1]==1 and axisIns[i]==2):
+            elif (axisIns[i - 1] == 1 and axisIns[i] == 2):
                 ins.append('r')
-            elif (axisIns[i-1] == 2 and axisIns[i] == 1):
+            elif (axisIns[i - 1] == 2 and axisIns[i] == 1):
                 ins.append('l')
-            elif(axisIns[i-1]==axisIns[i]):
+            elif (axisIns[i - 1] == axisIns[i]):
                 ins.append('b')
 
             ######   ALIGNMENT WITH THE AXES    #######
 
-            if(i == len(axisIns)-1):
-                if(axisIns[i]==axisP):
+            if (i == len(axisIns) - 1):
+                if (axisIns[i] == axisP):
                     ins.append('s')
-                elif(axisIns[i]==2 and axisP==1):
-                    ins.append('q')                 #right by 60 degrees
+                elif (axisIns[i] == 2 and axisP == 1):
+                    ins.append('q')  # right by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(1)
-                elif(axisIns[i]==1 and axisP == 2):
-                    ins.append('w')                 #left by 60 degrees
+                elif (axisIns[i] == 1 and axisP == 2):
+                    ins.append('w')  # left by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(2)
-                elif(axisIns[i]==3 and axisP==2):
-                    ins.append('q')                 #left by 60 degrees
+                elif (axisIns[i] == 3 and axisP == 2):
+                    ins.append('q')  # left by 60 degrees
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(2)
                 elif (axisIns[i] == 2 and axisP == 3):
                     ins.append('w')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(3)
                 elif (axisIns[i] == 1 and axisP == 3):
                     ins.append('q')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(3)
-                elif (axisIns[i] == 3and axisP == 1):
+                elif (axisIns[i] == 3 and axisP == 1):
                     ins.append('w')
+                    ins.append('a')
                     ins.append('s')
                     axisIns.append(1)
     else:
-        if first == 0:
-            i =0
-            if(axisIns[i]==axisP):
+        # if first == 0:
+            i = 0
+            if (axisIns[i] == axisP):
                 ins.append('s')
-            elif(axisIns[i]==2 and axisP==1):
-                ins.append('q')                 #right by 60 degrees
+            elif (axisIns[i] == 2 and axisP == 1):
+                ins.append('q')  # right by 60 degrees
+                ins.append('a')
                 ins.append('s')
                 axisIns.append(1)
-            elif(axisIns[i]==1 and axisP == 2):
-                ins.append('w')                 #left by 60 degrees
+            elif (axisIns[i] == 1 and axisP == 2):
+                ins.append('w')  # left by 60 degrees
+                ins.append('a')
                 ins.append('s')
                 axisIns.append(2)
-            elif(axisIns[i]==3 and axisP==2):
-                ins.append('q')                 #left by 60 degrees
+            elif (axisIns[i] == 3 and axisP == 2):
+                ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(2)
             elif (axisIns[i] == 2 and axisP == 3):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(3)
             elif (axisIns[i] == 1 and axisP == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(3)
-            elif (axisIns[i] == 3and axisP == 1):
+            elif (axisIns[i] == 3 and axisP == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('s')
                 axisIns.append(1)
+        # elif (first == 1):
+        #     i = 0
+        #     # if (axisIns[i] == axisP):
+        #     #     ins.append('s')
+        #     if (axisIns[i] == 2 and axisP == 1):
+        #         ins.append('q')  # right by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(1)
+        #     elif (axisIns[i] == 1 and axisP == 2):
+        #         ins.append('w')  # left by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(2)
+        #     elif (axisIns[i] == 3 and axisP == 2):
+        #         ins.append('q')  # left by 60 degrees
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(2)
+        #     elif (axisIns[i] == 2 and axisP == 3):
+        #         ins.append('w')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(3)
+        #     elif (axisIns[i] == 1 and axisP == 3):
+        #         ins.append('q')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(3)
+        #     elif (axisIns[i] == 3 and axisP == 1):
+        #         ins.append('w')
+        #         ins.append('a')
+        #
+        #         ins.append('s')
+        #         axisIns.append(1)
+
+
+
+
+    #
+    # if (axisIns[0] != -1 and len(axisIns) > 1):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] == axisP):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #         ins.append('s')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] != -1 and len(axisIns) == 1 and axisIns[0] != axisP):
+    #     if (startAxis == 2 and axisIns[0] == 3):
+    #         ins.append('r')
+    #     elif (startAxis == 2 and axisIns[0] == 1):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 3):
+    #         ins.append('l')
+    #     elif (startAxis == 3 and axisIns[0] == 1):
+    #         ins.append('r')
+    #     elif (startAxis == 3 and axisIns[0] == 2):
+    #         ins.append('l')
+    #     elif (startAxis == 1 and axisIns[0] == 2):
+    #         ins.append('r')
+    #     elif (startAxis == axisIns[0]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+    # elif (axisIns[0] == -1):
+    #     if (startAxis == 2 and axisIns[1] == 3):
+    #         ins.append('w')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 2 and axisIns[1] == 1):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[1] == 3):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[1] == 1):
+    #         ins.append('w')
+    #         ins.append('s')
+    #     elif (startAxis == 3 and axisIns[1] == 2):
+    #         ins.append('q')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == 1 and axisIns[1] == 2):
+    #         ins.append('w')
+    #         ins.append('a')
+    #         ins.append('s')
+    #     elif (startAxis == axisIns[1]):
+    #         if (first == 1):
+    #             ins.append('s')
+    #         else:
+    #             ins.append('a')
+
+    ######   PATH FOR FIRST PEBBLE    #######
 
     ######   FIRST TURN FOR WATER PITCHER    #######
 
-    if(axisIns[len(axisIns)-1]==axisPathWaterpi[0]):
-        ins.append('a')
-    elif(axisIns[len(axisIns)-1]==1 and axisPathWaterpi[0]==2):
-        ins.append('r')
-    elif(axisIns[len(axisIns)-1]==2 and axisPathWaterpi[0]==1):
-        ins.append('l')
-    elif(axisIns[len(axisIns)-1]==1 and axisPathWaterpi[0]==3):
-        ins.append('l')
-    elif(axisIns[len(axisIns)-1]==3 and axisPathWaterpi[0]==1):
-        ins.append('r')
-    elif(axisIns[len(axisIns)-1]==2 and axisPathWaterpi[0]==3):
-        ins.append('r')
-    elif(axisIns[len(axisIns)-1]==3 and axisPathWaterpi[0]==2):
-        ins.append('l')
+    if (axisPathWaterpi[0] != -1):
+
+        if (axisIns[len(axisIns) - 1] == axisPathWaterpi[0]):
+            ins.append('a')
+        elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 2):
+            ins.append('r')
+        elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 1):
+            ins.append('l')
+        elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[0] == 3):
+            ins.append('l')
+        elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 1):
+            ins.append('r')
+        elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[0] == 3):
+            ins.append('r')
+        elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[0] == 2):
+            ins.append('l')
+    elif (axisPathWaterpi[0] == -1):
+        if (final == 0):
+            if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+                ins.append('a')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+                ins.append('w')
+                ins.append('a')
+                ins.append('d')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+                ins.append('q')
+                ins.append('a')
+                ins.append('d')
+        if (final == 1):
+            if (axisIns[len(axisIns) - 1] == axisPathWaterpi[1]):
+                ins.append('a')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 2):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 1):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 1 and axisPathWaterpi[1] == 3):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 1):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 2 and axisPathWaterpi[1] == 3):
+                ins.append('w')
+                ins.append('a')
+                ins.append('f')
+            elif (axisIns[len(axisIns) - 1] == 3 and axisPathWaterpi[1] == 2):
+                ins.append('q')
+                ins.append('a')
+                ins.append('f')
 
     ######   PATH FOR WATER PITCHER    #######
 
-    if((len(axisPathWaterpi)-1)>0):                             #since the first turn is already decided, if the path
-                                                                #has only one turn before the destination is reached
-                                                                #we don't go through this for loop
-        for i in range(1,len(axisPathWaterpi)):
+    if ((len(axisPathWaterpi) - 1) > 0 and axisPathWaterpi[0] != -1):  # since the first turn is already decided, if the path
+        # has only one turn before the destination is reached
+        # we don't go through this for loop
+        for i in range(1, len(axisPathWaterpi)):
 
-            if(axisPathWaterpi[i-1]==1 and axisPathWaterpi[i]==3):
+            if (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 3):
                 ins.append('l')
-            elif (axisPathWaterpi[i-1] == 3 and axisPathWaterpi[i] == 1):
+            elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 1):
                 ins.append('r')
-            elif(axisPathWaterpi[i-1]==2 and axisPathWaterpi[i]==3):
+            elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 3):
                 ins.append('r')
-            elif (axisPathWaterpi[i-1] == 3 and axisPathWaterpi[i] == 2):
+            elif (axisPathWaterpi[i - 1] == 3 and axisPathWaterpi[i] == 2):
                 ins.append('l')
-            elif(axisPathWaterpi[i-1]==1 and axisPathWaterpi[i]==2):
+            elif (axisPathWaterpi[i - 1] == 1 and axisPathWaterpi[i] == 2):
                 ins.append('r')
-            elif (axisPathWaterpi[i-1] == 2 and axisPathWaterpi[i] == 1):
+            elif (axisPathWaterpi[i - 1] == 2 and axisPathWaterpi[i] == 1):
                 ins.append('l')
-            elif(axisPathWaterpi[i-1]==axisPathWaterpi[i]):
+            elif (axisPathWaterpi[i - 1] == axisPathWaterpi[i]):
                 ins.append('b')
 
             ######   ALIGNMENT OF AXES    #######
 
-            if(i == len(axisPathWaterpi)-1):
+            if (i == len(axisPathWaterpi) - 1):
 
-
-                if(final == 0):                                                  #checking if final pebble
-                    if(axisPathWaterpi[i]==axisWater):
+                if (final == 0):  # checking if final pebble
+                    if (axisPathWaterpi[i] == axisWater):
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                         ins.append('q')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                         ins.append('w')  # left by 60 degrees
-                        # ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                         ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                         ins.append('w')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                         ins.append('q')
+                        ins.append('a')
                         ins.append('d')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                         ins.append('w')
+                        ins.append('a')
                         ins.append('d')
                 else:
                     if (axisPathWaterpi[i] == axisWater):
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                         ins.append('q')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                         ins.append('w')  # left by 60 degrees
-                        # ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                         ins.append('q')  # right by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                         ins.append('w')  # left by 60 degrees
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                         ins.append('q')
+                        ins.append('a')
                         ins.append('f')
                     elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                         ins.append('w')
+                        ins.append('a')
                         ins.append('f')
     else:
-        i= 0
-        if (final == 0):                                                #checking if final pebble
+        i = 0
+        if (final == 0):  # checking if final pebble
             if (axisPathWaterpi[i] == axisWater):
                 ins.append('d')
             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                 ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 # ins.append('q')  # right by 60 degrees
                 ins.append('d')
             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                 ins.append('q')  # right by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('d')
             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('d')
         else:
             if (axisPathWaterpi[i] == axisWater):
                 ins.append('f')
             elif (axisPathWaterpi[i] == 2 and axisWater == 1):
                 ins.append('q')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 1 and axisWater == 2):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 # ins.append('q')  # right by 60 degrees
                 ins.append('f')
             elif (axisPathWaterpi[i] == 3 and axisWater == 2):
                 ins.append('q')  # right by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 2 and axisWater == 3):
                 ins.append('w')  # left by 60 degrees
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 1 and axisWater == 3):
                 ins.append('q')
+                ins.append('a')
+
                 ins.append('f')
             elif (axisPathWaterpi[i] == 3 and axisWater == 1):
                 ins.append('w')
+                ins.append('a')
+
                 ins.append('f')
 
     print(ins)
     return ins
+
 
 #################################################################################################3
 
@@ -566,13 +1313,14 @@ Purpose: Finds the final path for the bot in the following order:
         1. Finds the path between Robot_start to P1 and then from P1 to W1
         2. Finds the path between W1 to P2 and then from P2 to W1
         3. Finds the path between W1 to P3 and then from P3 to W1
-        
+
         Then it adds the above paths and returns it
 """
 
+
 def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
-    global PebbleAR1,PebbleAR2,PebbleAR3
-    if(arena_config[P1][2]=="1-1"):
+    global PebbleAR1, PebbleAR2, PebbleAR3
+    if (arena_config[P1][2] == "1-1"):
         axis = 2
     elif (arena_config[P1][2] == "2-2"):
         axis = 3
@@ -600,28 +1348,30 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
     if (arena_config[P3][2] == "3-3"):
         axis_Pebble3 = 1
 
+    print(axis, axis_Pebble2, axis_Pebble3, axisWater)
+
     cellNo = arena_config[P1][1]
     cellNo_pebble2 = arena_config[P2][1]
     cellNo_pebble3 = arena_config[P3][1]
 
     water = arena_config[W1][1]
 
-
-    if(Robot_start == "START - 1"):
+    if (Robot_start == "START - 1"):
         source = 1
     elif (Robot_start == "START - 2"):
         source = 16
 
-
-    PN1, PN2 = cellToNode(cell, cellNo, axis)                  #getting the two possible destination nodes for pebble 1
-    P2N1,P2N2 = cellToNode(cell, cellNo_pebble2, axis_Pebble2) #getting the two possible destination nodes for pebble 2
-    P3N1,P3N2 = cellToNode(cell, cellNo_pebble3, axis_Pebble3) #getting the two possible destination nodes for pebble 3
-    WN1, WN2 = cellToNode(cell, water, axisWater)       #getting the two possible destination nodes for water pitcher
-    pathN1 = printShortestDistance(adjV, source, PN1)   #path for pebble 1 at Node 1
-    pathN2 = printShortestDistance(adjV, source, PN2)   #path for pebble 1 at Node 2
+    PN1, PN2 = cellToNode(cell, cellNo, axis)  # getting the two possible destination nodes for pebble 1
+    P2N1, P2N2 = cellToNode(cell, cellNo_pebble2,
+                            axis_Pebble2)  # getting the two possible destination nodes for pebble 2
+    P3N1, P3N2 = cellToNode(cell, cellNo_pebble3,
+                            axis_Pebble3)  # getting the two possible destination nodes for pebble 3
+    WN1, WN2 = cellToNode(cell, water, axisWater)  # getting the two possible destination nodes for water pitcher
+    pathN1 = printShortestDistance(adjV, source, PN1)  # path for pebble 1 at Node 1
+    pathN2 = printShortestDistance(adjV, source, PN2)  # path for pebble 1 at Node 2
 
     if (len(pathN1) < len(pathN2)):
-        print("We choose path N1")                      #deciding which of the two nodes for pebble is closer
+        print("We choose path N1")  # deciding which of the two nodes for pebble is closer
         choice = pathN1
     elif (len(pathN2) < len(pathN1)):
         print("We choose path N2")
@@ -630,11 +1380,11 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
         print("Both distances are same")
         choice = pathN1
 
-    pathW1 = printShortestDistance(adjV, choice[len(choice) - 1], WN1)  #path for Water Pitcher from Pebble 1
+    pathW1 = printShortestDistance(adjV, choice[len(choice) - 1], WN1)  # path for Water Pitcher from Pebble 1
     pathW2 = printShortestDistance(adjV, choice[len(choice) - 1], WN2)
 
     if (len(pathW1) < len(pathW2)):
-        print("We choose path W1")                      #deciding which of the two nodes for water pitcher is closer
+        print("We choose path W1")  # deciding which of the two nodes for water pitcher is closer
         choiceW = pathW1
     elif (len(pathW2) < len(pathW1)):
         print("We choose path W2")
@@ -643,13 +1393,13 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
         print("Both distances are same")
         choiceW = pathW1
 
-    print("DistanceP:", len(choiceW)+len(choice))
+    print("DistanceP:", len(choiceW) + len(choice))
 
-    pathP21 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N1)          #WATER PICTHER TO PEBBLE!
+    pathP21 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N1)  # WATER PICTHER TO PEBBLE!
     pathP22 = printShortestDistance(adjV, choiceW[len(choiceW) - 1], P2N2)
 
     if (len(pathP21) < len(pathP22)):
-        print("We choose path P21")                      #deciding which of the two nodes for water pitcher is closer
+        print("We choose path P21")  # deciding which of the two nodes for water pitcher is closer
         choiceP2 = pathP21
     elif (len(pathP22) < len(pathP21)):
         print("We choose path P22")
@@ -658,9 +1408,7 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
         print("Both distances are same")
         choiceP2 = pathP21
 
-
-
-    pathW21 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN1)     #path for Water Pitcher from Pebble 2
+    pathW21 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN1)  # path for Water Pitcher from Pebble 2
     pathW22 = printShortestDistance(adjV, choiceP2[len(choiceP2) - 1], WN2)
 
     if (len(pathW21) < len(pathW22)):
@@ -672,7 +1420,6 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
     else:
         print("Both distances are same")
         choiceW2 = pathW21
-
 
     pathP31 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N1)
     pathP32 = printShortestDistance(adjV, choiceW2[len(choiceW2) - 1], P3N2)
@@ -687,7 +1434,7 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
         print("Both distances are same")
         choiceP3 = pathP31
 
-    pathW31 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN1)     #path for Water Pitcher from Pebble 2
+    pathW31 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN1)  # path for Water Pitcher from Pebble 2
     pathW32 = printShortestDistance(adjV, choiceP3[len(choiceP3) - 1], WN2)
 
     if (len(pathW31) < len(pathW32)):
@@ -700,37 +1447,35 @@ def calculatePath(arena_config, W1, P1, P2, P3, Robot_start):
         print("Both distances are same")
         choiceW3 = pathW31
 
-    axisP = pathToAxis(choice, edge_Axis)
-    axisPathPebble = pathToAxis(choice, edge_Axis)          #changing path for start point to pebble in terms of axis
+    axisP = pathToAxis(choice, edge_Axis, axis, 1)
+    axisPathPebble = pathToAxis(choice, edge_Axis, axis, 1)  # changing path for start point to pebble in terms of axis
     print("AxisP:", axisPathPebble)
 
-    axisPathPebble2 = pathToAxis(choiceP2, edge_Axis)  # changing path for start point to pebble in terms of axis
+    axisPathPebble2 = pathToAxis(choiceP2, edge_Axis, axis_Pebble2, 0)  # changing path for start point to pebble in terms of axis
     print("AxisP2:", axisPathPebble2)
 
-    axisPathPebble3 = pathToAxis(choiceP3, edge_Axis)  # changing path for start point to pebble in terms of axis
+    axisPathPebble3 = pathToAxis(choiceP3, edge_Axis, axis_Pebble3, 0)  # changing path for start point to pebble in terms of axis
     print("AxisP3:", axisPathPebble3)
 
-    axisPathWaterpi = pathToAxis(choiceW, edge_Axis)        #changing path for pebble 1 to water pitcher in terms of axis
+    axisPathWaterpi = pathToAxis(choiceW, edge_Axis, axisWater, 0)  # changing path for pebble 1 to water pitcher in terms of axis
     print("AxisW:", axisPathWaterpi)
 
-    axisPathWaterpi2 = pathToAxis(choiceW2, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
+    axisPathWaterpi2 = pathToAxis(choiceW2, edge_Axis, axisWater, 0)  # changing path for pebble 1 to water pitcher in terms of axis
     print("AxisW:", axisPathWaterpi2)
 
-    axisPathWaterpi3 = pathToAxis(choiceW3, edge_Axis)  # changing path for pebble 1 to water pitcher in terms of axis
+    axisPathWaterpi3 = pathToAxis(choiceW3, edge_Axis, axisWater, 0)  # changing path for pebble 1 to water pitcher in terms of axis
     print("AxisW:", axisPathWaterpi3)
 
-    #Calculating the path instructions
+    # Calculating the path instructions
     # for source to Pebble 1 to water pitcher
-    PebblePath1 = axisToIns(axisP, axisPathWaterpi, 2, axis, axisWater,0,1)
+    PebblePath1 = axisToIns(axisP, axisPathWaterpi, 2, axis, axisWater, 0, 1)
 
     # for Pebble 1 to Pebble 2 to water pitcher
-    pebblePath2 = axisToIns(axisPathPebble2, axisPathWaterpi2, axisWater, axis_Pebble2, axisWater,0,0)
+    pebblePath2 = axisToIns(axisPathPebble2, axisPathWaterpi2, axisWater, axis_Pebble2, axisWater, 0, 0)
 
     # for Pebble 2 to Pebble 3 to water pitcher
-    pebblePath3 = axisToIns(axisPathPebble3, axisPathWaterpi3, axisWater, axis_Pebble3, axisWater,1,0)
+    pebblePath3 = axisToIns(axisPathPebble3, axisPathWaterpi3, axisWater, axis_Pebble3, axisWater, 1, 0)
     Path = PebblePath1 + pebblePath2 + pebblePath3
-
-
 
     return Path
 
@@ -747,17 +1492,16 @@ Purpose: Does a number of jobs:
         4. opens serial port for communication bertween XBees
         5. Sends the instructions to the bot
         6. Recieves triggers for animation after pickups and drops and assigns values to flag and flaga for further processing
-        
-        
+
+
 """
 
 
 def background():
-    global flag, flaga,flagb,flagc, P1,P2,P3,W, START, Robot_start
-    global cell,adjV,edge_Axis, PebbleAR1, PebbleAR2,PebbleAR3
+    global flag, flaga, flagb, flagc, P1, P2, P3, W, START, Robot_start
+    global cell, adjV, edge_Axis, PebbleAR1, PebbleAR2, PebbleAR3
 
-#####################The graph is defined below this################
-
+    #####################The graph is defined below this################
 
     for i in range(55):
         for j in range(55):
@@ -793,7 +1537,6 @@ def background():
     add_edge(adjV, 47, 54);
     #######################
 
-
     add_edge_to_cell(cell, 1, 36, 36, 7, 10, 37, 37);
     add_edge_to_cell(cell, 2, 7, 34, 5, 36, 35, 35);
     add_edge_to_cell(cell, 3, 37, 50, 35, 38, 36, 51);
@@ -807,7 +1550,7 @@ def background():
     add_edge_to_cell(cell, 11, 49, 48, 31, 54, 32, 47);
     add_edge_to_cell(cell, 12, 53, 46, 47, 44, 54, 45);
     add_edge_to_cell(cell, 13, 41, 44, 53, 42, 52, 43);
-    add_edge_to_cell(cell, 14, 15, 42, 16, 41, 40, 17);
+    add_edge_to_cell(cell, 14, 15, 42, 41, 41, 40, 17);
     add_edge_to_cell(cell, 15, 31, 31, 48, 48, 30, 27);
     add_edge_to_cell(cell, 16, 47, 47, 27, 46, 48, 25);
     add_edge_to_cell(cell, 17, 45, 45, 25, 22, 46, 46);
@@ -891,76 +1634,67 @@ def background():
     edgeAxis(edge_Axis, 47, 46, 3)
     # print(edge_Axis)
 
+    ################################The graph is defined above this############
 
-################################The graph is defined above this############
-
-
-    arena_config =  {0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble",  14, "1-1"), 3: ("Pebble",   1 , "2-2"),
-                    5: ("Pebble", 15, "3-3")}                                                                  #using only the first two dictionary keys for progress task
-    Robot_start = "START - 1"
+    arena_config={0: ("Water Pitcher", 7, "2-2"), 1: ("Pebble1", 12, "2-2"), 3: ("Pebble2",3, "1-1"),
+                    5: ("Pebble3", 14,"3-3")}
+    Robot_start ="START - 2"
     if (Robot_start == "START - 1"):
         START = 16
     else:
         START = 1
 
+    W1, P1, P2, P3 = arena_config.keys()  # Storing the Aruco ID of each object in it's corresponding variable for ID
+    print(W1, P1, P2, P3)
 
-
-
-
-    W1,P1,P2,P3 = arena_config.keys()      #Storing the Aruco ID of each object in it's corresponding variable for ID
-    print(W1,P1,P2,P3)
-
-
-    ####DISCLAIMER###########
+    ####DISCLAIMER###########n
     """
     We had started defining the graph and working with the path planning right during task 3 and we were using
-    the image of the graph given in the rulebook with different cells numbered and we followed the axes given 
+    the image of the graph given in the rulebook with  different cells numbered and we followed the axes given 
     in it. Everything worked fine if we used that exact graph as a reference. But a couple of days before the 
     submission of the progress task we realized the axes in the actual arena are different:
-    
+
     Axis 1-1 on the arena was axis 2-2 on the numbered graph
     Axis 2-2 on the arena was axis 3-3 on the numbe
     red graph
     Axis 3-3 on the arena was axis 1-1 on the numbered graph
-    
+
     Since there wasn't enough time to correct everything and it would've been error prone to completely change
     the graph we simply use the following if else statements to convert the arena configurations to the
     configurations of our graph we had defined and everything worked fine again.
 
     """
-    startaxis = 2                       #the axis at either starting point is always 2
+    startaxis = 2  # the axis at either starting point is always 2
     START = 16
 
     ##################FIND ALL POSSIBLE PATHS BETWEEN THE PEBBLES AND WATER PITCHER#############
     #####(AS IN CHANGE THE ORDER OF THE PEBBLES TO BE TRAVERSED)##############
-    Path1 = calculatePath(arena_config,W1,P1,P2,P3, Robot_start)            #First go to pebble P1, then P2 and then P3
-    Path2 = calculatePath(arena_config,W1,P2,P1,P3, Robot_start)            #First go to pebble P2, then P1 and then P3
-    Path3 = calculatePath(arena_config,W1,P2,P3,P1, Robot_start)            #First go to pebble P2, then P3 and then P1
-    Path4 = calculatePath(arena_config,W1,P1,P3,P2, Robot_start)            #First go to pebble P1, then P3 and then P2
-    Path5 = calculatePath(arena_config,W1,P3,P2,P1, Robot_start)            #First go to pebble P3, then P2 and then P1
-    Path6 = calculatePath(arena_config,W1,P3,P1,P2, Robot_start)            #First go to pebble P3, then P1 and then P2
+    Path1 = calculatePath(arena_config, W1, P1, P2, P3, Robot_start)  # First go to pebble P1, then P2 and then P3
+    Path2 = calculatePath(arena_config, W1, P2, P1, P3, Robot_start)  # First go to pebble P2, then P1 and then P3
+    Path3 = calculatePath(arena_config, W1, P2, P3, P1, Robot_start)  # First go to pebble P2, then P3 and then P1
+    Path4 = calculatePath(arena_config, W1, P1, P3, P2, Robot_start)  # First go to pebble P1, then P3 and then P2
+    Path5 = calculatePath(arena_config, W1, P3, P2, P1, Robot_start)  # First go to pebble P3, then P2 and then P1
+    Path6 = calculatePath(arena_config, W1, P3, P1, P2, Robot_start)  # First go to pebble P3, then P1 and then P2
 
-    arrayPath = [Path1,Path2,Path3,Path4,Path5,Path6]
-    arrayLengthPath = [len(Path1),len(Path2),len(Path3),len(Path4),len(Path5),len(Path6)]
+    arrayPath = [Path1, Path2, Path3, Path4, Path5, Path6]
+    arrayLengthPath = [len(Path1), len(Path2), len(Path3), len(Path4), len(Path5), len(Path6)]
 
-    print("Path1:",Path1)
-    print("Path2:",Path2)
-    print("Path3:",Path3)
-    print("Path4:",Path4)
-    print("Path5:",Path5)
-    print("Path6:",Path6)
-
-
+    print("Path1:", Path1)
+    print("Path2:", Path2)
+    print("Path3:", Path3)
+    print("Path4:", Path4)
+    print("Path5:", Path5)
+    print("Path6:", Path6)
 
     ###############CHECK WHICH PATH IS SHORTEST AND FOLLOW THAT#####################
     finalPathToBot = arrayPath[arrayLengthPath.index(min(arrayLengthPath))]
-    #FINAL INSTRUCTION#
+    # FINAL INSTRUCTION#
     print(finalPathToBot)
 
-    if(finalPathToBot == Path1):
-        PebbleAR1,PebbleAR2,PebbleAR3 = P1,P2,P3
-    elif(finalPathToBot == Path2):
-        PebbleAR1,PebbleAR2,PebbleAR3 = P2,P1,P3
+    if (finalPathToBot == Path1):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P1, P2, P3
+    elif (finalPathToBot == Path2):
+        PebbleAR1, PebbleAR2, PebbleAR3 = P2, P1, P3
     elif (finalPathToBot == Path3):
         PebbleAR1, PebbleAR2, PebbleAR3 = P1, P3, P1
     elif (finalPathToBot == Path4):
@@ -971,43 +1705,44 @@ def background():
         PebbleAR1, PebbleAR2, PebbleAR3 = P3, P1, P2
 
     ###################################XBee communication###########################################
-    ser = serial.Serial("COM4", 9600, timeout=0.002)        # COM4 was used on our device
-
+    ser = serial.Serial("COM8", 9600, timeout=0.00)  # COM4 was used on our device
 
     if (ser.isOpen()):
         while True:
             a = ser.read(1)
-            print(a)
+            if a!=b'':
+                print(a)
             if (a == b'w'):
                 break
     while True:
         if (ser.isOpen()):  # Checking if input port is open ie capable of communication
 
-
             for i in range(len(finalPathToBot)):
                 ser.write(finalPathToBot[i].encode())  # Writing binary data onto the serial port
-                #time.sleep(0.03)  # letting the atmega recieve the character and send it back
+                #time.sleep(0.05)  # letting the atmega recieve the character and send it back
 
                 rec = ser.read(1)  # recieving characters from atmega serially
-                print(rec)
-                if rec == b's':
-                    flaga = 'p'
-                    print("PICKUP #1")
-                if rec == b'd':
-                    flag = 'd'
-                    print("DROP #1")
-                if rec == b'g':
-                    flagb = 'p'
-                    print("PICKUP #2")
-                if rec == b'h':
-                    flagc = 'p'
-                    print("PICKUP #3")
-                if rec == b'c':
-                    flag = 'c'
-                    print("DROP #2")
-                if rec == b'f':
-                    flag = 'f'
-                    print("DROP #3")
+                if rec!= b'':
+                    print(rec)
+                # if rec == b's':
+                #     flaga = 'p'
+                #     print("PICKUP #1")
+                # if rec == b'd':
+                #     flag = 'd'
+                #     print("DROP #1")
+                # if rec == b'g':
+                #     flagb = 'p'
+                #     print("PICKUP #2")
+                # if rec == b'h':
+                #     flagc = 'p'
+                #     print("PICKUP #3")
+                # if rec == b'c':
+                #     flag = 'c'
+                #     print("DROP #2")
+                # if rec == b'f':
+                #     flag = 'f'
+                #     print("DROP #3")
+
 
 
 """
@@ -1022,24 +1757,23 @@ def init_gl():
     global texture_object, texture_background
     global crow, pebble, pebble_dim, waterE, waterF, waterM1, waterM2
 
-    waterE = OBJ('pitcher.obj', swapyz=True)                #obj for the Water pitcher (Empty)
+    waterE = OBJ('pitcher.obj', swapyz=True)  # obj for the Water pitcher (Empty)
 
-    waterM1 = OBJ('pitcherMiddle1.obj', swapyz=True)        #obj for the Water pitcher (Medium 1)
-    waterM2 = OBJ('pitcher3.obj', swapyz=True)              #obj for the Water pitcher (Medium 2)
+    waterM1 = OBJ('pitcherMiddle1.obj', swapyz=True)  # obj for the Water pitcher (Medium 1)
+    waterM2 = OBJ('pitcher3.obj', swapyz=True)  # obj for the Water pitcher (Medium 2)
 
-    waterF = OBJ('pitcherFilled.obj', swapyz=True)          #obj for the Water pitcher (Filled)
+    waterF = OBJ('pitcherFilled.obj', swapyz=True)  # obj for the Water pitcher (Filled)
 
+    pebble = OBJ('finalrock.obj', swapyz=True)  # obj for the initial pebble stack
+    pebble_dim = OBJ('PebbleDim.obj', swapyz=True)  # obj for the diminished pebble stack
 
-    pebble = OBJ('finalrock.obj', swapyz=True)              #obj for the initial pebble stack
-    pebble_dim = OBJ('PebbleDim.obj', swapyz=True)#obj for the diminished pebble stack
+    # the obj files for the Crow animation is loaded along with the emoji that represents its current emotions#
 
-     #the obj files for the Crow animation is loaded along with the emoji that represents its current emotions#
-
-    #The if statement simply loads one of the two versions of the crow models we have depending on the Start position.
-    #This is purely for aesthetics purposes since we realized that the same model didn't look good on both sides
-    #Since the emoji part is supposed to stay beyond the crow, we simple made two models, each being the mirror image
-    #of each other on the Y - Axis. Transforming the image to flip it in code was not consistent so we made two models instead.
-    #This doesn't take extra time since only one model is loaded, either the one at start-1 or at start-2
+    # The if statement simply loads one of the two versions of the crow models we have depending on the Start position.
+    # This is purely for aesthetics purposes since we realized that the same model didn't look good on both sides
+    # Since the emoji part is supposed to stay beyond the crow, we simple made two models, each being the mirror image
+    # of each other on the Y - Axis. Transforming the image to flip it in code was not consistent so we made two models instead.
+    # This doesn't take extra time since only one model is loaded, either the one at start-1 or at start-2
 
     if Robot_start == "START - 1":
         load('crowEmoji', frames)  # Crow animation flying to the pebble
@@ -1050,15 +1784,11 @@ def init_gl():
 
     elif Robot_start == "START - 2":
 
-        load('crowEmoji2',frames)                    #Crow animation flying to the pebble
+        load('crowEmoji2', frames)  # Crow animation flying to the pebble
 
-        load('Bend2',frames_bend)                    #Crow animation with bent neck
+        load('Bend2', frames_bend)  # Crow animation with bent neck
 
-        load('crowEmojiPebble2',frames_crowrock)     #Crow animation flying the pebble back to the water pitcher
-
-
-
-
+        load('crowEmojiPebble2', frames_crowrock)  # Crow animation flying the pebble back to the water pitcher
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -1071,7 +1801,6 @@ def init_gl():
     glEnable(GL_LIGHT0)
     texture_background = glGenTextures(1)
     texture_object = glGenTextures(1)
-
 
 
 """
@@ -1119,7 +1848,7 @@ def drawGLScene():
                 # if i[0] == 1:
                 #     overlay(frame, ar_list, i[0], "texture_3.png")
                 # if i[0] == 610:
-                    overlay(frame, ar_list, i[0], "texture_4.png")
+                overlay(frame, ar_list, i[0], "texture_4.png")
 
         cv2.imshow('frame', frame)
         cv2.waitKey(1)
@@ -1209,16 +1938,17 @@ def draw_background(img):
     glTranslatef(0.0, 0.0, -i)
     glBegin(GL_QUADS)
     glTexCoord2f(0.0, 1.0)
-    glVertex3f(-(8*i/14), -(6*i/14), 0.0)
+    glVertex3f(-(8 * i / 14), -(6 * i / 14), 0.0)
     glTexCoord2f(1.0, 1.0)
-    glVertex3f((8*i/14), -(6*i/14), 0.0)
+    glVertex3f((8 * i / 14), -(6 * i / 14), 0.0)
     glTexCoord2f(1.0, 0.0)
-    glVertex3f((8*i/14), (6*i/14), 0.0)
+    glVertex3f((8 * i / 14), (6 * i / 14), 0.0)
     glTexCoord2f(0.0, 0.0)
-    glVertex3f(-(8*i/14), (6*i/14), 0.0)
+    glVertex3f(-(8 * i / 14), (6 * i / 14), 0.0)
     glEnd()
     glPopMatrix()
     return None
+
 
 """
 Function Name : init_object_texture()
@@ -1250,8 +1980,6 @@ def init_object_texture(image_filepath):
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-
-
     glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image)
     glPopMatrix()
 
@@ -1267,11 +1995,11 @@ Purpose: Takes the directory name as input and stores all the obj files in it in
 """
 
 
-def load(directory,frames):
+def load(directory, frames):
     os.chdir(directory)
 
     for file in glob.glob("*.obj"):
-        frames.append(OBJ(file,swapyz=True))
+        frames.append(OBJ(file, swapyz=True))
 
     os.chdir('..')
     frames_length = len(frames)
@@ -1284,17 +2012,16 @@ Output: frames[i].gl_list
 Purpose: Takes the frame list as input and returns the frames one by one to display animation on the openGL window
 """
 
+
 def next_frame(frames):
     global i
     i += 1
 
-    #if frame_index >= self.frames_length:
+    # if frame_index >= self.frames_length:
     if i >= len(frames):
         i = 0
 
     return frames[i].gl_list
-
-
 
 
 """
@@ -1317,31 +2044,26 @@ def overlay(img, ar_list, ar_id, texture_file):
             centre, rvec, tvecs = x[1], x[2], x[3]
 
     rmtx = cv2.Rodrigues(rvec)[0]
-    offset = [[[-0.127*19/8, -0.127*2.8, 0]]]
+    offset = [[[-0.127 * 19 / 8, -0.127 * 2.8, 0]]]
     tvecs = tvecs - offset
-    font = cv2.FONT_HERSHEY_SIMPLEX #font for displaying text (below)
+    font = cv2.FONT_HERSHEY_SIMPLEX  # font for displaying text (below)
 
-    cv2.putText(img, "Id: " + str(ar_id), centre, font, 1, (0,255,0),2,cv2.LINE_AA)
+    cv2.putText(img, "Id: " + str(ar_id), centre, font, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
-
-    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2],  (tvecs[0][0][0])*12.5],
-                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], (tvecs[0][0][1]+0.16)*11],
-                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2]*8],
+    view_matrix = np.array([[rmtx[0][0], rmtx[0][1], rmtx[0][2], (tvecs[0][0][0]) * 12.5],
+                            [rmtx[1][0], rmtx[1][1], rmtx[1][2], (tvecs[0][0][1] + 0.16) * 11],
+                            [rmtx[2][0], rmtx[2][1], rmtx[2][2], tvecs[0][0][2] * 8],
                             [0.0, 0.0, 0.0, 1.0]])
-
 
     view_matrix = view_matrix * INVERSE_MATRIX
     view_matrix = np.transpose(view_matrix)
 
     glPushMatrix()
     glLoadMatrixd(view_matrix)
-    print(PebbleAR1,PebbleAR2,PebbleAR3)
+    print(PebbleAR1, PebbleAR2, PebbleAR3)
     ##########Asigning different Models to different arucos##########################
 
-
-
-    if ar_id == 0:                               #AR ID for water pitcher is always 0
-
+    if ar_id == 0:  # AR ID for water pitcher is always 0
 
         if flag == 0:
             glCallList(waterE.gl_list)
@@ -1357,8 +2079,8 @@ def overlay(img, ar_list, ar_id, texture_file):
             glCallList(waterF.gl_list)
             bend = 1
 
-    if (ar_id) == PebbleAR1:                          #AR ID for pebble  1
-        glScale(2.8, 2.8,2.8)
+    if (ar_id) == PebbleAR1:  # AR ID for pebble  1
+        glScale(2.8, 2.8, 2.8)
         if flaga == 0:
             glCallList(pebble.gl_list)
         elif flaga == 'p':
@@ -1366,8 +2088,8 @@ def overlay(img, ar_list, ar_id, texture_file):
             CrowPick = 1
             CrowBeakClose = 0
 
-    if ar_id == PebbleAR2:                           #AR ID for Pebble 2
-        glScale(2.8, 2.8,2.8)
+    if ar_id == PebbleAR2:  # AR ID for Pebble 2
+        glScale(2.8, 2.8, 2.8)
         if flagb == 0:
             glCallList(pebble.gl_list)
         elif flagb == 'p':
@@ -1375,30 +2097,27 @@ def overlay(img, ar_list, ar_id, texture_file):
             CrowPick = 1
             CrowBeakClose = 0
 
-    if ar_id == PebbleAR3:                               #AR ID for Pebble 3
-        glScale(2.8, 2.8,2.8)
+    if ar_id == PebbleAR3:  # AR ID for Pebble 3
+        glScale(2.8, 2.8, 2.8)
         if flagc == 0:
             glCallList(pebble.gl_list)
-            print("FLAGC",flagc)
+            print("FLAGC", flagc)
         elif flagc == 'p':
             glCallList(pebble_dim.gl_list)
             CrowPick = 1
             CrowBeakClose = 0
-            print("FLAGC",flagc)
+            print("FLAGC", flagc)
 
-    if str(ar_id) == '10':                              #AR ID for crow is always 10
-        glScale(1.25,1.25,1.25)
-        if(bend ==1):
+    if str(ar_id) == '10':  # AR ID for crow is always 10
+        glScale(1.25, 1.25, 1.25)
+        if (bend == 1):
             glCallList(next_frame(frames_bend))
-        elif(flaga == 'p' and flag == 0) or (flagb == 'p' and flag == 'd') or (flagc == 'p' and flag == 'c'):
+        elif (flaga == 'p' and flag == 0) or (flagb == 'p' and flag == 'd') or (flagc == 'p' and flag == 'c'):
             glCallList(next_frame(frames_crowrock))
-        elif(flag == 'd' and flagb == 0) or (flag == 'c' and flagc ==0) or (flag == 0 and flaga == 0):
+        elif (flag == 'd' and flagb == 0) or (flag == 'c' and flagc == 0) or (flag == 0 and flaga == 0):
             glCallList(next_frame(frames))
 
-
-
     #################################################3
-
 
     glPopMatrix()
 
