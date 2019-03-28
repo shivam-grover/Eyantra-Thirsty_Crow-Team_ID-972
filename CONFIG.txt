@@ -103,3 +103,9 @@ arena_config ={0: ("Water Pitcher", 10, "1-1"), 1: ("Pebble1",  1, "2-2"), 3: ("
 
 {0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  19, "2-2"), 3: ("Pebble2",   13 , "3-3"),
                     5: ("Pebble3", 18, "1-1")}
+
+{0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  10, "2-2"), 3: ("Pebble2",   12 , "1-1"),
+                    5: ("Pebble3", 11, "3-3")}
+                    
+{0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  13, "3-3"), 3: ("Pebble2",   14 , "1-1"),
+                    5: ("Pebble3", 12, "2-2")}                    
