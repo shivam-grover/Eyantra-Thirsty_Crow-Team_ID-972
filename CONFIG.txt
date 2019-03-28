@@ -1,3 +1,8 @@
+{0: ("Water Pitcher", 3, "2-2"), 1: ("Pebble1", 1, "1-1"), 3: ("Pebble2",2, "3-3"),
+                    5: ("Pebble3", 4,"2-2")}//DONE 
+{0: ("Water Pitcher", 5, "2-2"), 1: ("Pebble1", 10, "1-1"), 3: ("Pebble2",6, "3-3"),
+                    5: ("Pebble3", 11,"2-2")} //DONE 
+
 {0: ("Water Pitcher", 7, "3-3"), 1: ("Pebble1",  1, "2-2"), 3: ("Pebble2",   3 , "1-1"),
                     5: ("Pebble3", 12, "3-3")}
                     DONE
