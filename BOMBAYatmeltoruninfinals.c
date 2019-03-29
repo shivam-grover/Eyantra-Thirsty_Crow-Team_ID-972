@@ -527,13 +527,13 @@ int main(void)
 
 
 			//when the black line is under the right led and not the others			
-			if (Center_white_line<90 && Right_white_line>90 && Left_white_line<90){
+			if (Center_white_line<60 && Right_white_line>55 && Left_white_line<70){
 				flag = 0;
 				velocity(220,220);	
 				soft_right();	
 				}
 			//when the black line is under the center led and not the others
-			if (Center_white_line<90  && Left_white_line>90 && Right_white_line<90){
+			if (Center_white_line<60  && Left_white_line>60 && Right_white_line<60){
 				flag = 1;
 				velocity(220,220);
 				soft_left();		
@@ -541,7 +541,7 @@ int main(void)
 
 			}	
 			//when the black line is under the center led and not the others
-			if ((Center_white_line>90 && Right_white_line<90 && Left_white_line<90) /*|| (Center_white_line>50 && Right_white_line<50 && Left_white_line>50) || (Center_white_line>50 && Right_white_line>50 && Left_white_line<50)*/){
+			if ((Center_white_line>55 && Right_white_line<55 && Left_white_line<55) /*|| (Center_white_line>50 && Right_white_line<50 && Left_white_line>50) || (Center_white_line>50 && Right_white_line>50 && Left_white_line<50)*/){
 				flag = 2;
 				velocity(220,220);
 				if(flag2==1){
@@ -591,16 +591,17 @@ int main(void)
 											//to overcome this we gave it opposite polarity for small interval of time
 											//this solved the problem just fine
 					stop();
-					servoaction(70);		//arms is brought down
+					servoaction(75);		//arms is brought down
 					_delay_ms(150);
+					
+					magnet_on();			//magnet is turned on and pebble is picked up
+					_delay_ms(250);
 					forward();				//bot moves forward
 					/*velocity(255,210);*/
 					velocity(255*0.8,243*0.8);
-					_delay_ms(410);
+					_delay_ms(380);
 					backward();
 					stop();
-					magnet_on();			//magnet is turned on and pebble is picked up
-					_delay_ms(200);
 					
 					//CHECKING WHICH PEBBLE IS PICKED//
 					if(s==0){
@@ -636,7 +637,7 @@ int main(void)
 					forward();						//bot is moved forward
 
 
-					_delay_ms(300);
+					_delay_ms(280);
 					backward();
 					stop();
 					_delay_ms(100);
