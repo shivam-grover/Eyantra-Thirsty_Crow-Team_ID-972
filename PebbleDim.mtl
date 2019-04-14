@@ -1,0 +1,24 @@
+# Blender MTL File: 'Pebble_initial.blend'
+# Material Count: 2
+
+newmtl Material.007
+Ns 92.156863
+Ka 1.000000 1.000000 1.000000
+Kd 0.098503 0.098503 0.098503
+Ks 0.044455 0.044455 0.044455
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd hellllloooo-==.jpg
+
+newmtl Material.012
+Ns 92.156863
+Ka 1.000000 1.000000 1.000000
+Kd 0.087139 0.087139 0.087139
+Ks 0.044455 0.044455 0.044455
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd helllllllloooooo.jpg

@@ -1,4 +1,4 @@
-# Blender MTL File: 'pitcher2.blend'
+# Blender MTL File: 'pitcher3.blend'
 # Material Count: 1
 
 newmtl Material.001
@@ -10,4 +10,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd pitch.png
+map_Kd pitcher3.png
