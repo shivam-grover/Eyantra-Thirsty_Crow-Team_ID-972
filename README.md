@@ -1,6 +1,6 @@
-# Eyantra-Thirsty_Crow-Team_ID-972
+# Eyantra-Thirsty_Crow-Winners-TeamID#972
 
-Winners of eYantra 2019
+**Winners of eYantra 2019**
 Theme Thirsty Crow
 
 ## How to use
