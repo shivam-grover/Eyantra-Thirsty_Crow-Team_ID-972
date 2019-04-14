@@ -6,5 +6,7 @@ Theme Thirsty Crow
 ## How to use
 
 Open FinalPython.py on any IDE
+
 Connect your XBee to your laptop and change the port number for serial communication
+
 Run the script and start your bot
