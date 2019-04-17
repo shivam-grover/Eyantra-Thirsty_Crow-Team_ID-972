@@ -6,6 +6,10 @@
 * Theme: Thirsty Crow (TC)(eYRC)
 """
 
+'''' This code is used to perform serial communiation between the microcontroller and the machine running the python script. 
+This will be used in the future to send the python list consisting of the array of characters being used for the final bot traversal
+The corresponding C code can be found in the C_C++_Codes folder by the name of echo.c'''
+
 import serial
 import time
 if __name__ == "__main__":
