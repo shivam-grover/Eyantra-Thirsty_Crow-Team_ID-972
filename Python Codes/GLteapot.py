@@ -29,6 +29,9 @@
 **************************************************************************
 """
 
+'''
+This is used to overlay a teapot on the aruco markers detected in the frame. Can be used to adjust the matrices for offset reducation as well'''
+
 import numpy as np
 import cv2
 import cv2.aruco as aruco
