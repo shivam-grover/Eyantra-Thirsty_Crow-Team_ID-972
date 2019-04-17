@@ -13,7 +13,7 @@
 
 /*
 * Team Id: 972
-* Author List: Harshita Didee, Shivam Grover, Shivani Jindal, Anuj Trehan
+* Author List: Harshita Diddee, Shivam Grover, Shivani Jindal, Anuj Trehan
 * Filename: main.c
 * Theme: Thirsty-Crow
 * Functions: magnet_pin_config(), buzzer_pin_config(), motor_pin_config(), timer5_init(), 
