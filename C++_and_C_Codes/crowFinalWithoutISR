@@ -17,6 +17,10 @@
 * Global Variables: none
 */
 
+/*This method uses the xbee timeout as the sole parameter to receive the characters sent by the python script.
+Not the best method, as timeout has to be changed in accordance with the time delays used in the bot traversal. 
+Characters received may be skipped.*/
+
 
 #define F_CPU 14745600
 #include <avr/io.h>
