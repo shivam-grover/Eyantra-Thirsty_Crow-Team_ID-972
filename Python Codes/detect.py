@@ -41,6 +41,11 @@ Output: camera_matrix, dist_coeff
 Purpose: Loads the camera calibration file provided and returns the camera and
 		 distortion matrix saved in the calibration file.
 """
+
+
+''' 
+Used to detect the aruco markers and then overlay a cube, axis or a cylinder on the detected aruco. 
+'''
 def getCameraMatrix():
 		with np.load('System.npz') as X:
 				camera_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
